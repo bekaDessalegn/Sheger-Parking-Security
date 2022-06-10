@@ -1,6 +1,7 @@
 // ignore_for_file: file_names, prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sheger_parking_security/constants/colors.dart';
 import 'package:sheger_parking_security/constants/strings.dart';
 import 'package:sheger_parking_security/pages/LoginPage.dart';
@@ -29,81 +30,110 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: Col.background,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        brightness: Brightness.dark,
-        backgroundColor: Colors.transparent,
-        elevation: 0.0,
-        toolbarHeight: 70,
-        actions: [IconButton(
-            color: Col.Onbackground,
-            padding: EdgeInsets.fromLTRB(0, 0, 25, 0),
-            iconSize: 40,
-            onPressed: (){
-              showDialog(context: context, builder: (context) {
-                return AlertDialog(
-                  title: Text("Sheger Parking",
+      appBar: PreferredSize(
+        child: Container(
+          decoration: BoxDecoration(boxShadow: [
+            BoxShadow(
+              color: Col.primary,
+              offset: Offset(0, 2.0),
+              blurRadius: 4.0,
+            )
+          ]),
+          child: AppBar(
+            automaticallyImplyLeading: false,
+            brightness: Brightness.dark,
+            backgroundColor: Colors.transparent,
+            elevation: 0.0,
+            toolbarHeight: 60,
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size(50, 30),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    alignment: Alignment.centerLeft),
+                onPressed: () {
+                  showDialog(context: context, builder: (context) {
+                    return AlertDialog(
+                      title: Text("Sheger Parking",
+                        style: TextStyle(
+                          color: Col.Onbackground,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Nunito',
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      content: Text("Do you want to Log out",
+                        style: TextStyle(
+                          color: Col.Onbackground,
+                          fontSize: 20,
+                          fontFamily: 'Nunito',
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      actions: [
+                        FlatButton(onPressed: (){
+                          Navigator.of(context).pop(AlertDialog());
+                        }, child: Text("Cancel",
+                          style: TextStyle(
+                            fontSize: 18,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        ),
+                        FlatButton(onPressed: () async {
+                          final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+                          sharedPreferences.remove("email");
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+                        }, child: Text("Log out",
+                          style: TextStyle(
+                            fontSize: 18,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        ),
+                      ],
+                      elevation: 10.0,
+                    );
+                  });
+                },
+                child: Container(
+                  margin: EdgeInsets.only(right: 20),
+                  child: Text(
+                    "Log out",
                     style: TextStyle(
-                      color: Col.Onbackground,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Nunito',
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                  content: Text("Do you want to Log out",
-                    style: TextStyle(
-                      color: Col.Onbackground,
+                      color: Col.linkColor,
                       fontSize: 20,
                       fontFamily: 'Nunito',
-                      letterSpacing: 0.3,
                     ),
                   ),
-                  actions: [
-                    FlatButton(onPressed: (){
-                      Navigator.of(context).pop(AlertDialog());
-                    }, child: Text("Cancel",
-                      style: TextStyle(
-                        fontSize: 18,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                    ),
-                    FlatButton(onPressed: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
-                    }, child: Text("Log out",
-                      style: TextStyle(
-                        fontSize: 18,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                    ),
-                  ],
-                  elevation: 10.0,
-                );
-              });
-            },
-            icon: Icon(Icons.logout)),
-        ],
-        title: Text(Strings.app_title,
-          style: TextStyle(
-            color: Col.Onsurface,
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Nunito',
-            letterSpacing: 0.3,
-          ),
-        ),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.only(bottomLeft: Radius.circular(20),bottomRight: Radius.circular(20)),
-            gradient: LinearGradient(
-                colors: [Col.secondary,Col.secondary],
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter
+                ),
+              ),
+            ],
+            title: Text(
+              "Sheger",
+              style: TextStyle(
+                color: Col.blackColor,
+                fontSize: 24,
+                fontWeight: FontWeight.w500,
+                fontFamily: 'Nunito',
+                letterSpacing: 0.3,
+              ),
+            ),
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(bottomLeft: Radius.circular(0),bottomRight: Radius.circular(0)),
+                gradient: LinearGradient(
+                    colors: [Colors.white,Colors.white],
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter
+                ),
+              ),
             ),
           ),
         ),
+        preferredSize: Size.fromHeight(kToolbarHeight),
       ),
       body:
       screens[currentIndex],

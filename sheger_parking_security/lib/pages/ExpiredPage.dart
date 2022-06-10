@@ -1,7 +1,15 @@
 // ignore_for_file: file_names, prefer_const_constructors
 
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:sheger_parking_security/constants/api.dart';
 import 'package:sheger_parking_security/constants/colors.dart';
+import 'package:sheger_parking_security/models/ReservationDetails.dart';
+import 'package:http/http.dart' as http;
+import 'package:sheger_parking_security/widget/search_widget.dart';
 
 import 'ClientReservationDetails.dart';
 
@@ -12,164 +20,89 @@ class ExpiredPage extends StatefulWidget {
 }
 
 class _ExpiredPageState extends State<ExpiredPage> {
-  bool inside = true;
 
-  final textController = TextEditingController();
+  bool isLoading = false;
 
-  checkTextFieldEmpty(){
+  List<ReservationDetails> reservations = [];
+  String query = '';
+  Timer? debouncer;
 
-    String text;
+  @override
+  void initState() {
+    super.initState();
 
-    text = textController.text ;
-
-    if(text.isEmpty)
-    {
-      return false;
-    }else{
-      return true;
-    }
-
+    init();
   }
 
-  dynamic infos = [
-    {
-      "plateNumber" : "624875",
-      "time" : "8:00 A.M",
-      "duration" : "3 hrs",
-      "inside" : false,
-      "isexpired" : false
-    },
-    {
-      "plateNumber" : "215896",
-      "time" : "4:00 A.M",
-      "duration" : "6 hrs",
-      "inside" : true,
-      "isexpired" : true
-    },
-    {
-      "plateNumber" : "478563",
-      "time" : "7:00 A.M",
-      "duration" : "2 hrs",
-      "inside" : false,
-      "isexpired" : false
-    },
-    {
-      "plateNumber" : "015874",
-      "time" : "1:00 A.M",
-      "duration" : "4 hrs",
-      "inside" : true,
-      "isexpired" : false
-    },
-    {
-      "plateNumber" : "624875",
-      "time" : "8:00 A.M",
-      "duration" : "3 hrs",
-      "inside" : true,
-      "isexpired" : false
-    },
-    {
-      "plateNumber" : "215896",
-      "time" : "4:00 A.M",
-      "duration" : "6 hrs",
-      "inside" : true,
-      "isexpired" : false
-    },{
-      "plateNumber" : "478563",
-      "time" : "7:00 A.M",
-      "duration" : "2 hrs",
-      "inside" : true,
-      "isexpired" : false
-    },{
-      "plateNumber" : "015874",
-      "time" : "1:00 A.M",
-      "duration" : "4 hrs",
-      "inside" : true,
-      "isexpired" : false
-    },
-    {
-      "plateNumber" : "624875",
-      "time" : "8:00 A.M",
-      "duration" : "3 hrs",
-      "inside" : true,
-      "isexpired" : true
-    },
-    {
-      "plateNumber" : "215896",
-      "time" : "4:00 A.M",
-      "duration" : "6 hrs",
-      "inside" : true,
-      "isexpired" : false
-    },{
-      "plateNumber" : "478563",
-      "time" : "7:00 A.M",
-      "duration" : "2 hrs",
-      "inside" : true,
-      "isexpired" : false
-    },{
-      "plateNumber" : "015874",
-      "time" : "1:00 A.M",
-      "duration" : "4 hrs",
-      "inside" : true,
-      "isexpired" : true
-    },
-  ];
+  @override
+  void dispose() {
+    debouncer?.cancel();
+    super.dispose();
+  }
+
+  void debounce(
+      VoidCallback callback, {
+        Duration duration = const Duration(milliseconds: 1000),
+      }) {
+    if (debouncer != null) {
+      debouncer!.cancel();
+    }
+
+    debouncer = Timer(duration, callback);
+  }
+
+  static Future<List<ReservationDetails>> getReservationDetails(
+      String query) async {
+    final url = Uri.parse(
+        '${base_url}/token:qwhu67fv56frt5drfx45e/reservations');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final List reservationDetails = json.decode(response.body);
+
+      return reservationDetails
+          .map((json) => ReservationDetails.fromJson(json))
+          .where((reservationDetail) {
+        final reservationPlateNumberLower =
+        reservationDetail.reservationPlateNumber.toLowerCase();
+        final branchLower = reservationDetail.branchName.toLowerCase();
+        final searchLower = query.toLowerCase();
+
+        return reservationPlateNumberLower.contains(searchLower) ||
+            branchLower.contains(searchLower);
+      }).toList();
+    } else {
+      throw Exception();
+    }
+  }
+
+  Future init() async {
+
+    setState(() {
+      isLoading = true;
+    });
+
+    final reservationDetails = await getReservationDetails(query);
+
+    setState(() => this.reservations = reservationDetails);
+
+    setState(() {
+      isLoading = false;
+    });
+
+  }
 
 
   @override
   Widget build(BuildContext context) {
 
-    final styleActive = TextStyle(color: Colors.black);
-    final styleHint = TextStyle(color: Colors.black54);
-    final style = checkTextFieldEmpty() ? styleActive : styleHint;
-
     return Column(
       children: <Widget>[
-        Container(
-          height: 42,
-          margin: EdgeInsets.fromLTRB(16, 5, 16, 5),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: Colors.white,
-            border: Border.all(color: Colors.black26),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.grey,
-                offset: Offset(0.0, 0.5), //(x,y)
-                blurRadius: 2.0,
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: TextField(
-            controller: textController,
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              icon: Icon(Icons.search, color: style.color),
-              suffixIcon: checkTextFieldEmpty() ? GestureDetector(
-                child: Icon(Icons.close, color: style.color,),
-                onTap: (){
-                  setState(() {
-                    textController.clear();
-                  });
-                  FocusScope.of(context).requestFocus(FocusNode());
-                },
-              ) : null,
-              hintText: "Search",
-              hintStyle: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black26,
-              ),
-            ),
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: Col.Onsurface,
-            ),
-          ),
-        ),
-        Padding(padding: EdgeInsets.fromLTRB(0, 5, 0, 10),
-          child: Text("Expired Reservations",
+        buildSearch(),
+        Padding(
+          padding: EdgeInsets.fromLTRB(15, 5, 0, 10),
+          child: Text(
+            "Expired Reservations",
             style: TextStyle(
               color: Col.Onbackground,
               fontSize: 28,
@@ -179,77 +112,136 @@ class _ExpiredPageState extends State<ExpiredPage> {
             ),
           ),
         ),
-        Expanded(child:
-        ListView.builder(
-          itemCount: infos.length,
-          itemBuilder: (context, index) {
-            dynamic info = infos[index];
-            return (info['isexpired']) as bool ? GestureDetector(child: Padding(padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-              child: Card(
-                color: (info['isexpired']) as bool ? Col.expired : Colors.grey[100],
-                elevation: 8,
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(10, 8, 0, 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Stack(
-                        children: [
-                          Align(
-                            child: IconButton(onPressed: () {
-                              inside = !inside;
-                              setState(() => info['inside'] = !inside);
-                            },
-                              icon: Icon((info['inside']) as bool ? Icons.check : Icons.car_repair,),
-                              iconSize: 30,),
-                            alignment: Alignment.topRight,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
-                            child: Text("Plate Number : ${info["plateNumber"]}",
-                              style: TextStyle(
-                                color: Col.Onbackground,
-                                fontSize: 23,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Nunito',
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Text("Start time : ${info["time"]}",
-                        style: TextStyle(
-                          color: Col.Onbackground,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Nunito',
-                          letterSpacing: 0.3,
-                        ),
-                      ),
-                      Text("Duration : ${info["duration"]}",
-                        style: TextStyle(
-                          color: Col.Onbackground,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Nunito',
-                          letterSpacing: 0.3,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
-              ),
-            ),
-              onTap: (){
-                // Navigator.push(context, MaterialPageRoute(builder: (context) => ClientReservationDetails(detail: info,)));
-              },
-            ) : Padding(padding: EdgeInsets.all(0));
-          },
-        ),
+        Expanded(
+          child: isLoading ? Center(child: CircularProgressIndicator(),
+          ) : ListView.builder(
+            itemCount: reservations.length,
+            itemBuilder: (context, index) {
+              final reservationDetail = reservations[index];
+              DateTime startTime = DateTime.fromMillisecondsSinceEpoch(reservationDetail.startingTime);
+              String formattedstartTime = DateFormat('kk:00 a').format(startTime);
+
+              return reservationDetail.completed ? Padding(padding: EdgeInsets.all(0)) : reservationDetail.expired ? buildReservation(reservationDetail, formattedstartTime) : Padding(padding: EdgeInsets.all(0));
+            },
+          ),
         ),
       ],
     );
   }
+
+  Widget buildSearch() => SearchWidget(
+    text: query,
+    hintText: 'Search by plate number',
+    onChanged: searchReservations,
+  );
+
+  Future searchReservations(String query) async => debounce(() async {
+    final reservationDetails = await getReservationDetails(query);
+
+    if (!mounted) return;
+
+    setState(() {
+      this.query = query;
+      this.reservations = reservationDetails;
+    });
+  });
+
+  Widget buildReservation(ReservationDetails reservationDetail, String formattedstartTime) =>
+      GestureDetector(
+        onTap: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ClientReservationDetails(
+                    reservationId: reservationDetail.id,
+                    client: reservationDetail.client,
+                    reservationPlateNumber:
+                    reservationDetail.reservationPlateNumber,
+                    branch: reservationDetail.branch,
+                    branchName: reservationDetail.branchName,
+                    slot: reservationDetail.slot,
+                    price: reservationDetail.price.toString(),
+                    startingTime: reservationDetail.startingTime.toString(),
+                    duration: reservationDetail.duration.toString(),
+                    parked: reservationDetail.parked,
+                  )));
+        },
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
+          child: Card(
+            color: Col.expired,
+            elevation: 8,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(10, 8, 0, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Stack(
+                    children: [
+                      Align(
+                        child: IconButton(
+                          onPressed: () {
+                          },
+                          icon: Icon((reservationDetail.parked)
+                              ? Icons.check
+                              : Icons.car_repair),
+                          iconSize: 25,
+                        ),
+                        alignment: Alignment.topRight,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
+                        child: Text(
+                          "Plate Number : ${reservationDetail.reservationPlateNumber}",
+                          style: TextStyle(
+                            color: Col.Onbackground,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Nunito',
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 5,),
+                  Text(
+                    "Branch : ${reservationDetail.branchName}",
+                    style: TextStyle(
+                      color: Col.Onbackground,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Nunito',
+                      letterSpacing: 0.1,
+                    ),
+                  ),
+                  SizedBox(height: 5,),
+                  Text(
+                    "Start Time : $formattedstartTime",
+                    style: TextStyle(
+                      color: Col.Onbackground,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Nunito',
+                      letterSpacing: 0.1,
+                    ),
+                  ),
+                  SizedBox(height: 5,),
+                  Text(
+                    "Slot Number: ${reservationDetail.slot}",
+                    style: TextStyle(
+                      color: Col.Onbackground,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Nunito',
+                      letterSpacing: 0.1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
+          ),
+        ),
+      );
 }

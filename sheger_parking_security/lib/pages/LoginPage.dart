@@ -2,7 +2,10 @@
 
 import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sheger_parking_security/constants/api.dart';
 import 'package:sheger_parking_security/constants/colors.dart';
 import 'package:sheger_parking_security/constants/strings.dart';
 import 'package:sheger_parking_security/models/Staff.dart';
@@ -21,17 +24,18 @@ class _LoginPageState extends State<LoginPage> {
   bool _secureText = true;
 
   String? response;
+  String? hashedPassword;
 
   Future login() async{
     var headersList = {
       'Accept': '*/*',
       'Content-Type': 'application/json'
     };
-    var url = Uri.parse('http://192.168.1.6:5000/token:qwhu67fv56frt5drfx45e/staffs/login');
+    var url = Uri.parse('${base_url}/token:qwhu67fv56frt5drfx45e/staffs/login');
 
     var body = {
       "phone": staff.phone,
-      "passwordHash": staff.passwordHash
+      "passwordHash": hashedPassword
     };
     var req = http.Request('POST', url);
     req.headers.addAll(headersList);
@@ -46,6 +50,13 @@ class _LoginPageState extends State<LoginPage> {
 
     if (res.statusCode >= 200 && res.statusCode < 300) {
       print(resBody);
+
+      var data = json.decode(resBody);
+      String email = data["email"].toString();
+
+      final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+      sharedPreferences.setString("email", email);
+
       Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
     }
     else {
@@ -151,6 +162,10 @@ class _LoginPageState extends State<LoginPage> {
                   child: TextFormField(
                     controller: TextEditingController(text: staff.passwordHash),
                     onChanged: (value){
+                      var bytes = utf8.encode(value);
+                      var sha512 = sha256.convert(bytes);
+                      var hashedPassword = sha512.toString();
+                      this.hashedPassword = hashedPassword;
                       staff.passwordHash = value;
                     },
                     validator: (value) {

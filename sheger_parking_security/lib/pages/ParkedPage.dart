@@ -3,6 +3,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:sheger_parking_security/constants/api.dart';
 import 'package:sheger_parking_security/constants/colors.dart';
 import 'package:sheger_parking_security/models/ReservationDetails.dart';
 import 'package:http/http.dart' as http;
@@ -15,6 +17,9 @@ class ParkedPage extends StatefulWidget {
 }
 
 class _ParkedPageState extends State<ParkedPage> {
+
+  bool isLoading = false;
+
   List<ReservationDetails> reservations = [];
   String query = '';
   Timer? debouncer;
@@ -46,7 +51,7 @@ class _ParkedPageState extends State<ParkedPage> {
   static Future<List<ReservationDetails>> getReservationDetails(
       String query) async {
     final url = Uri.parse(
-        'http://192.168.1.6:5000/token:qwhu67fv56frt5drfx45e/reservations');
+        '${base_url}/token:qwhu67fv56frt5drfx45e/reservations');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -57,7 +62,7 @@ class _ParkedPageState extends State<ParkedPage> {
           .where((reservationDetail) {
         final reservationPlateNumberLower =
             reservationDetail.reservationPlateNumber.toLowerCase();
-        final branchLower = reservationDetail.branch.toLowerCase();
+        final branchLower = reservationDetail.branchName.toLowerCase();
         final searchLower = query.toLowerCase();
 
         return reservationPlateNumberLower.contains(searchLower) ||
@@ -69,9 +74,19 @@ class _ParkedPageState extends State<ParkedPage> {
   }
 
   Future init() async {
+
+    setState(() {
+      isLoading = true;
+    });
+
     final reservationDetails = await getReservationDetails(query);
 
     setState(() => this.reservations = reservationDetails);
+
+    setState(() {
+      isLoading = false;
+    });
+
   }
 
   @override
@@ -82,7 +97,7 @@ class _ParkedPageState extends State<ParkedPage> {
         Padding(
           padding: EdgeInsets.fromLTRB(15, 5, 0, 10),
           child: Text(
-            "Reservations",
+            "Parked Reservations",
             style: TextStyle(
               color: Col.Onbackground,
               fontSize: 28,
@@ -93,12 +108,15 @@ class _ParkedPageState extends State<ParkedPage> {
           ),
         ),
         Expanded(
-          child: ListView.builder(
+          child: isLoading ? Center(child: CircularProgressIndicator(),
+          ) : ListView.builder(
             itemCount: reservations.length,
             itemBuilder: (context, index) {
               final reservationDetail = reservations[index];
+              DateTime startTime = DateTime.fromMillisecondsSinceEpoch(reservationDetail.startingTime);
+              String formattedstartTime = DateFormat('kk:00 a').format(startTime);
 
-              return reservationDetail.parked ? buildReservation(reservationDetail) : Padding(padding: EdgeInsets.all(0));
+              return reservationDetail.completed ? Padding(padding: EdgeInsets.all(0)) : reservationDetail.parked ? buildReservation(reservationDetail, formattedstartTime) : Padding(padding: EdgeInsets.all(0));
             },
           ),
         ),
@@ -108,7 +126,7 @@ class _ParkedPageState extends State<ParkedPage> {
 
   Widget buildSearch() => SearchWidget(
         text: query,
-        hintText: 'Plate Number',
+        hintText: 'Search by plate number',
         onChanged: searchReservations,
       );
 
@@ -123,7 +141,7 @@ class _ParkedPageState extends State<ParkedPage> {
         });
       });
 
-  Widget buildReservation(ReservationDetails reservationDetail) =>
+  Widget buildReservation(ReservationDetails reservationDetail, String formattedstartTime) =>
       GestureDetector(
         onTap: () {
           Navigator.push(
@@ -135,6 +153,7 @@ class _ParkedPageState extends State<ParkedPage> {
                         reservationPlateNumber:
                         reservationDetail.reservationPlateNumber,
                         branch: reservationDetail.branch,
+                    branchName: reservationDetail.branchName,
                         slot: reservationDetail.slot,
                         price: reservationDetail.price.toString(),
                         startingTime: reservationDetail.startingTime.toString(),
@@ -145,7 +164,7 @@ class _ParkedPageState extends State<ParkedPage> {
         child: Padding(
           padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
           child: Card(
-            color: Colors.grey[100],
+            color: reservationDetail.expired ? Col.expired : Colors.grey[100],
             elevation: 8,
             child: Padding(
               padding: EdgeInsets.fromLTRB(10, 8, 0, 8),
@@ -156,12 +175,7 @@ class _ParkedPageState extends State<ParkedPage> {
                     children: [
                       Align(
                         child: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              reservationDetail.parked =
-                                  !reservationDetail.parked;
-                            });
-                          },
+                          onPressed: () {},
                           icon: Icon((reservationDetail.parked)
                               ? Icons.check
                               : Icons.car_repair),
@@ -184,16 +198,29 @@ class _ParkedPageState extends State<ParkedPage> {
                       ),
                     ],
                   ),
+                  SizedBox(height: 5,),
                   Text(
-                    "${reservationDetail.startingTime}:00 A.M - ${reservationDetail.startingTime + reservationDetail.duration}:00 P.M",
+                    "Branch : ${reservationDetail.branchName}",
                     style: TextStyle(
                       color: Col.Onbackground,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Nunito',
-                      letterSpacing: 0.3,
+                      letterSpacing: 0.1,
                     ),
                   ),
+                  SizedBox(height: 5,),
+                  Text(
+                    "Start Time : $formattedstartTime",
+                    style: TextStyle(
+                      color: Col.Onbackground,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Nunito',
+                      letterSpacing: 0.1,
+                    ),
+                  ),
+                  SizedBox(height: 5,),
                   Text(
                     "Slot Number: ${reservationDetail.slot}",
                     style: TextStyle(
@@ -201,7 +228,7 @@ class _ParkedPageState extends State<ParkedPage> {
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Nunito',
-                      letterSpacing: 0.3,
+                      letterSpacing: 0.1,
                     ),
                   ),
                 ],
