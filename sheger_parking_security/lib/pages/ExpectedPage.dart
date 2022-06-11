@@ -33,6 +33,9 @@ class _ExpectedPageState extends State<ExpectedPage> {
   late String startDate;
   late String endTime;
 
+  late String fullName;
+  late String phone;
+
   // NotificationService _notificationService = NotificationService();
 
   @override
@@ -100,6 +103,33 @@ class _ExpectedPageState extends State<ExpectedPage> {
     });
   }
 
+  Future getClientDetail(ReservationDetails reservationDetail) async {
+    var headersList = {
+      'Accept': '*/*',
+    };
+    var url = Uri.parse('http://127.0.0.1:5000/token:qwhu67fv56frt5drfx45e/clients/${reservationDetail.client}');
+
+    var req = http.Request('GET', url);
+    req.headers.addAll(headersList);
+
+    var res = await req.send();
+    final resBody = await res.stream.bytesToString();
+
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      var data = json.decode(resBody);
+      String clientFullName = data["fullName"].toString();
+      String clientPhone = data["phone"].toString();
+
+      fullName = clientFullName;
+      phone = clientPhone;
+
+      print(resBody);
+    }
+    else {
+      print(res.reasonPhrase);
+    }
+  }
+
   Future editParked() async {
     var headersList = {
       'Accept': '*/*',
@@ -125,7 +155,6 @@ class _ExpectedPageState extends State<ExpectedPage> {
       print(res.reasonPhrase);
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -337,6 +366,7 @@ class _ExpectedPageState extends State<ExpectedPage> {
                 physics: NeverScrollableScrollPhysics(),
                 itemCount: reservations.length,
                 itemBuilder: (context, index) {
+
                   final reservationDetail = reservations[index];
 
                   DateTime startingTime =
@@ -344,8 +374,11 @@ class _ExpectedPageState extends State<ExpectedPage> {
                   String startDateEach = DateFormat.yMMMd().format(startingTime);
                   String formattedStartTime = DateFormat('h:mm a').format(startingTime);
 
+                  getClientDetail(reservationDetail);
+
                   // DateTime startTime = DateTime.fromMillisecondsSinceEpoch(reservationDetail.startingTime);
                   // String formattedstartTime = DateFormat('kk:00 a').format(startTime);
+
 
                   return reservationDetail.completed ? Padding(padding: EdgeInsets.all(0)) : index == 0 ? Container(
                     child: Padding(
@@ -481,6 +514,35 @@ class _ExpectedPageState extends State<ExpectedPage> {
                                     ),
                                   ),
                                 ),
+                                Padding(
+                                  padding: EdgeInsets.only(left: 20),
+                                  child: RichText(
+                                    text: TextSpan(
+                                      children: [
+                                        TextSpan(
+                                            style: TextStyle(
+                                              color: Col.whiteColor,
+                                              fontSize: 16,
+                                              fontWeight:
+                                              FontWeight.bold,
+                                              fontFamily: 'Nunito',
+                                              letterSpacing: 0.3,
+                                            ),
+                                            text: "Phone"),
+                                        TextSpan(
+                                          style: TextStyle(
+                                            color: Col.whiteColor,
+                                            fontSize: 16,
+                                            fontFamily: 'Nunito',
+                                            letterSpacing: 0.3,
+                                          ),
+                                          text:
+                                          " {phone}",
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                                 SizedBox(height: 10,),
                                 Center(
                                   child: RaisedButton(
@@ -568,7 +630,7 @@ class _ExpectedPageState extends State<ExpectedPage> {
                 child: Text(
                   reservationDetail.reservationPlateNumber,
                   style: TextStyle(
-                    color: Col.whiteColor,
+                    color: reservationDetail.expired ? Col.expiredColor : Col.whiteColor,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Nunito',
