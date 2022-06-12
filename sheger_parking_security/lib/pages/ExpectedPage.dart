@@ -212,8 +212,32 @@ class ExpectedPageState extends State<ExpectedPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Center(
-            child: Text(Strings.branchName),
+          Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: Center(
+              child: RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                        style: TextStyle(
+                          color: Col.blackColor,
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Nunito',
+                        ),
+                        text: Strings.branchName),
+                    TextSpan(
+                      style: TextStyle(
+                        color: Col.blackColor,
+                        fontSize: 25,
+                        fontFamily: 'Nunito',
+                      ),
+                      text: " Branch",
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
           buildSearch(),
           Container(
@@ -223,10 +247,10 @@ class ExpectedPageState extends State<ExpectedPage> {
               style: TextStyle(
                 color: Col.blackColor,
                 fontSize: 20,
-                fontWeight: FontWeight.bold,
                 fontFamily: 'Nunito',
                 letterSpacing: 0.1,
               ),
+              textAlign: TextAlign.center,
             ),
           ),
           isLoading
@@ -466,15 +490,22 @@ class ExpectedPageState extends State<ExpectedPage> {
                                                           width:
                                                               double.infinity,
                                                           child: RaisedButton(
-                                                            onPressed: () async {
+                                                            onPressed:
+                                                                () async {
                                                               setState(() {
                                                                 isParked = true;
-                                                                isCompleted = true;
+                                                                isCompleted =
+                                                                    true;
                                                               });
-                                                              await editParked(reservationDetail.id);
-                                                              final reservationDetails = await getReservationDetails(query);
+                                                              await editParked(
+                                                                  reservationDetail
+                                                                      .id);
+                                                              final reservationDetails =
+                                                                  await getReservationDetails(
+                                                                      query);
                                                               setState(() {
-                                                                this.reservations = reservationDetails;
+                                                                this.reservations =
+                                                                    reservationDetails;
                                                               });
                                                             },
                                                             color: Col.primary,
@@ -504,14 +535,20 @@ class ExpectedPageState extends State<ExpectedPage> {
                                                           width:
                                                               double.infinity,
                                                           child: RaisedButton(
-                                                            onPressed: () async {
+                                                            onPressed:
+                                                                () async {
                                                               setState(() {
                                                                 isParked = true;
                                                               });
-                                                              await editParked(reservationDetail.id);
-                                                              final reservationDetails = await getReservationDetails(query);
+                                                              await editParked(
+                                                                  reservationDetail
+                                                                      .id);
+                                                              final reservationDetails =
+                                                                  await getReservationDetails(
+                                                                      query);
                                                               setState(() {
-                                                                this.reservations = reservationDetails;
+                                                                this.reservations =
+                                                                    reservationDetails;
                                                               });
                                                             },
                                                             color: Col.primary,
@@ -551,10 +588,67 @@ class ExpectedPageState extends State<ExpectedPage> {
                                     formattedStartTime, startDateEach);
                       },
                     )
-                  : Center(
-                      child: Padding(
-                        padding: EdgeInsets.only(top: 50),
-                        child: Text("No rereservations"),
+                  : Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 30),
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        color: Col.blackColor,
+                        elevation: 8,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                              minWidth: MediaQuery.of(context).size.width),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(15.0)),
+                              gradient: LinearGradient(
+                                  colors: [
+                                    Col.locationgradientColor,
+                                    Col.blackColor
+                                  ],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter),
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 30),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    width: 15,
+                                  ),
+                                  Icon(
+                                    Icons.car_repair,
+                                    size: 80,
+                                    color: Col.primary,
+                                  ),
+                                  SizedBox(
+                                    height: 15,
+                                  ),
+                                  Text(
+                                    "No Reservations!",
+                                    style: TextStyle(
+                                        color: Col.whiteColor,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Text(
+                                    "Reservations at you branch will appear here.",
+                                    style: TextStyle(
+                                        color: Col.whiteColor, fontSize: 18),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
                       ),
                     ),
         ],
