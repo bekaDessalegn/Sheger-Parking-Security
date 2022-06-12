@@ -51,7 +51,7 @@ class _ClientReservationDetailsState extends State<ClientReservationDetails> {
       price,
       startingTime,
       duration;
-  bool parked;
+  bool parked = false;
 
   _ClientReservationDetailsState(
       this.reservationId,
@@ -370,7 +370,7 @@ class _ClientReservationDetailsState extends State<ClientReservationDetails> {
                   ? Center(
                     child: Container(
                 width:
-                200,
+                220,
                 child: RaisedButton(
                     onPressed: () async {
                       setState(() {
@@ -407,12 +407,12 @@ class _ClientReservationDetailsState extends State<ClientReservationDetails> {
                   : Center(
                     child: Container(
                 width:
-                200,
+                220,
                 child: RaisedButton(
                     onPressed: () async {
                       setState(() {
                         isParked = true;
-                        parked = false;
+                        parked = true;
                       });
                       await editParked(reservationId);
                     },

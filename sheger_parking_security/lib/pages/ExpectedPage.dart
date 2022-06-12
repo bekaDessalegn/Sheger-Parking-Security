@@ -458,42 +458,6 @@ class ExpectedPageState extends State<ExpectedPage> {
                                                       ),
                                                     ),
                                                   ),
-                                                  Padding(
-                                                    padding: EdgeInsets.only(
-                                                        left: 20),
-                                                    child: RichText(
-                                                      text: TextSpan(
-                                                        children: [
-                                                          TextSpan(
-                                                              style: TextStyle(
-                                                                color: Col
-                                                                    .whiteColor,
-                                                                fontSize: 16,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                fontFamily:
-                                                                    'Nunito',
-                                                                letterSpacing:
-                                                                    0.3,
-                                                              ),
-                                                              text: "Phone"),
-                                                          TextSpan(
-                                                            style: TextStyle(
-                                                              color: Col
-                                                                  .whiteColor,
-                                                              fontSize: 16,
-                                                              fontFamily:
-                                                                  'Nunito',
-                                                              letterSpacing:
-                                                                  0.3,
-                                                            ),
-                                                            text: " {phone}",
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ),
                                                   SizedBox(
                                                     height: 10,
                                                   ),
