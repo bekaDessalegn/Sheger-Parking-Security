@@ -116,11 +116,11 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
             title: Text(
-              "Sheger",
+              "SHEGER",
               style: TextStyle(
                 color: Col.blackColor,
                 fontSize: 24,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.bold,
                 fontFamily: 'Nunito',
                 letterSpacing: 0.3,
               ),
