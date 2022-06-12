@@ -74,7 +74,7 @@ class _LoginPageState extends State<LoginPage> {
       Strings.branchId = branchId;
       Strings.branchName = branchName;
 
-      Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
     }
     else {
       print(res.reasonPhrase);

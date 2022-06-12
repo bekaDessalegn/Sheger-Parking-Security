@@ -34,9 +34,9 @@ class _HomePageState extends State<HomePage> {
         child: Container(
           decoration: BoxDecoration(boxShadow: [
             BoxShadow(
-              color: Col.primary,
-              offset: Offset(0, 2.0),
-              blurRadius: 4.0,
+              color: Colors.black.withOpacity(0.2),
+              offset: Offset(0, 1.0),
+              blurRadius: 7.0,
             )
           ]),
           child: AppBar(
@@ -89,7 +89,7 @@ class _HomePageState extends State<HomePage> {
                           sharedPreferences.remove("branchName");
                           Strings.branchId = false;
                           Strings.branchName = "";
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+                          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => LoginPage()), (Route<dynamic> route) => false);
                         }, child: Text("Log out",
                           style: TextStyle(
                             fontSize: 18,

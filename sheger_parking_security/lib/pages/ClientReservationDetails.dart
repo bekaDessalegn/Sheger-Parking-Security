@@ -70,6 +70,7 @@ class _ClientReservationDetailsState extends State<ClientReservationDetails> {
 
   bool isParked = false;
   bool isCompleted = false;
+  bool loading =  true;
 
   Future editParked(String reserveId) async {
     var headersList = {'Accept': '*/*', 'Content-Type': 'application/json'};
@@ -91,9 +92,50 @@ class _ClientReservationDetailsState extends State<ClientReservationDetails> {
     }
   }
 
+  late String fullName;
+  late String phone;
+
+  Future getClientDetail() async {
+
+    print(client);
+      var headersList = {
+        'Accept': '*/*',
+      };
+      var url = Uri.parse(
+          '$base_url/token:qwhu67fv56frt5drfx45e/clients/$client');
+      print(url);
+
+      var req = http.Request('GET', url);
+      req.headers.addAll(headersList);
+
+      var res = await req.send();
+      final resBody = await res.stream.bytesToString();
+
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        var data = json.decode(resBody);
+        String clientFullName = data["fullName"].toString();
+        String clientPhone = data["phone"].toString();
+
+        fullName = clientFullName;
+        phone = clientPhone;
+
+        setState(() {
+          loading = false;
+        });
+
+        print(resBody);
+      } else {
+        print(resBody);
+        print(res.reasonPhrase);
+      }
+    }
+
   @override
   void initState() {
     super.initState();
+
+    getClientDetail();
+
     DateTime startTime = DateTime.fromMillisecondsSinceEpoch(int.parse(startingTime));
     String startDate = DateFormat.yMMMd().format(startTime);
     String formattedStartTime = DateFormat('h:mm a').format(startTime);
@@ -113,9 +155,9 @@ class _ClientReservationDetailsState extends State<ClientReservationDetails> {
         child: Container(
           decoration: BoxDecoration(boxShadow: [
             BoxShadow(
-              color: Col.primary,
-              offset: Offset(0, 2.0),
-              blurRadius: 4.0,
+              color: Colors.black.withOpacity(0.2),
+              offset: Offset(0, 1.0),
+              blurRadius: 7.0,
             )
           ]),
           child: AppBar(
@@ -155,7 +197,7 @@ class _ClientReservationDetailsState extends State<ClientReservationDetails> {
         ),
         preferredSize: Size.fromHeight(kToolbarHeight),
       ),
-      body: SingleChildScrollView(
+      body: loading ? Center(child: CircularProgressIndicator(color: Col.primary,)) : SingleChildScrollView(
         child: Container(
           color: Col.background,
           child: Column(
@@ -334,10 +376,10 @@ class _ClientReservationDetailsState extends State<ClientReservationDetails> {
               Padding(
                 padding: EdgeInsets.fromLTRB(30, 5, 0, 0),
                 child: Text(
-                  "Price",
+                  "User",
                   style: TextStyle(
                     color: Colors.black,
-                    fontSize: 18,
+                    fontSize: 19,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Nunito',
                     letterSpacing: 0.3,
@@ -345,9 +387,48 @@ class _ClientReservationDetailsState extends State<ClientReservationDetails> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.fromLTRB(30, 0, 0, 0),
+                padding: EdgeInsets.fromLTRB(40, 5, 0, 0),
                 child: Text(
-                  "$price birr",
+                  "Full Name",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Nunito',
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(40, 0, 0, 0),
+                child: Text(
+                  "$fullName",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 18,
+                    fontFamily: 'Nunito',
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
+              SizedBox(height: 10,),
+              Padding(
+                padding: EdgeInsets.fromLTRB(40, 0, 0, 0),
+                child: Text(
+                  "Phone Number",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Nunito',
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(40, 0, 0, 0),
+                child: Text(
+                  "$phone",
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 18,
