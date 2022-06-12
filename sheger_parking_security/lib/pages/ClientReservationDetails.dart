@@ -1,9 +1,15 @@
 // ignore_for_file: file_names, prefer_const_constructors, no_logic_in_create_state, prefer_const_literals_to_create_immutables
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sheger_parking_security/constants/colors.dart';
+import 'package:http/http.dart' as http;
 import 'package:sheger_parking_security/constants/strings.dart';
+import 'package:sheger_parking_security/pages/HomePage.dart';
+
+import '../constants/api.dart';
 
 class ClientReservationDetails extends StatefulWidget {
   String reservationId,
@@ -61,6 +67,29 @@ class _ClientReservationDetailsState extends State<ClientReservationDetails> {
 
   late String startTime;
   late String startDate;
+
+  bool isParked = false;
+  bool isCompleted = false;
+
+  Future editParked(String reserveId) async {
+    var headersList = {'Accept': '*/*', 'Content-Type': 'application/json'};
+    var url = Uri.parse(
+        '${base_url}/token:qwhu67fv56frt5drfx45e/reservations/$reserveId');
+
+    var body = {"parked": isParked, "completed": isCompleted};
+    var req = http.Request('PATCH', url);
+    req.headers.addAll(headersList);
+    req.body = json.encode(body);
+
+    var res = await req.send();
+    final resBody = await res.stream.bytesToString();
+
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      print(resBody);
+    } else {
+      print(res.reasonPhrase);
+    }
+  }
 
   @override
   void initState() {
@@ -337,6 +366,80 @@ class _ClientReservationDetailsState extends State<ClientReservationDetails> {
                   ),
                 ),
               ),
+              (parked)
+                  ? Center(
+                    child: Container(
+                width:
+                200,
+                child: RaisedButton(
+                    onPressed: () async {
+                      setState(() {
+                        isParked = true;
+                        isCompleted = true;
+                      });
+                      await editParked(reservationId);
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
+                    },
+                    color: Col.primary,
+                    child: Text(
+                      'Left',
+                      style: TextStyle(
+                        color: Col
+                            .blackColor,
+                        fontSize: 16,
+                        fontFamily:
+                        'Nunito',
+                        letterSpacing:
+                        0.3,
+                      ),
+                      textAlign:
+                      TextAlign
+                          .center,
+                    ),
+                    shape: RoundedRectangleBorder(
+                        borderRadius:
+                        BorderRadius
+                            .circular(
+                            20)),
+                ),
+              ),
+                  )
+                  : Center(
+                    child: Container(
+                width:
+                200,
+                child: RaisedButton(
+                    onPressed: () async {
+                      setState(() {
+                        isParked = true;
+                        parked = false;
+                      });
+                      await editParked(reservationId);
+                    },
+                    color: Col.primary,
+                    child: Text(
+                      'Parked',
+                      style: TextStyle(
+                        color: Col
+                            .blackColor,
+                        fontSize: 16,
+                        fontFamily:
+                        'Nunito',
+                        letterSpacing:
+                        0.3,
+                      ),
+                      textAlign:
+                      TextAlign
+                          .center,
+                    ),
+                    shape: RoundedRectangleBorder(
+                        borderRadius:
+                        BorderRadius
+                            .circular(
+                            20)),
+                ),
+              ),
+                  ),
             ],
           ),
         ),
