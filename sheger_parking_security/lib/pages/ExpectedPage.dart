@@ -2,9 +2,11 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:sheger_parking_security/constants/api.dart';
 import 'package:sheger_parking_security/constants/colors.dart';
+import 'package:sheger_parking_security/constants/strings.dart';
 import 'package:sheger_parking_security/models/ReservationDetails.dart';
 import 'package:http/http.dart' as http;
 import 'package:sheger_parking_security/models/notification_service.dart';
@@ -13,13 +15,11 @@ import 'package:sheger_parking_security/widget/search_widget.dart';
 import 'package:intl/intl.dart';
 
 class ExpectedPage extends StatefulWidget {
-
   @override
-  _ExpectedPageState createState() => _ExpectedPageState();
+  ExpectedPageState createState() => ExpectedPageState();
 }
 
-class _ExpectedPageState extends State<ExpectedPage> {
-
+class ExpectedPageState extends State<ExpectedPage> {
   bool isLoading = false;
 
   List<ReservationDetails> reservations = [];
@@ -40,8 +40,45 @@ class _ExpectedPageState extends State<ExpectedPage> {
 
   @override
   void initState() {
-
     super.initState();
+
+    AwesomeNotifications().isNotificationAllowed().then(
+      (isAllowed) {
+        if (!isAllowed) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('Allow Notifications'),
+              content: Text('Our app would like to send you notifications'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    'Don\'t Allow',
+                    style: TextStyle(color: Colors.grey, fontSize: 18),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => AwesomeNotifications()
+                      .requestPermissionToSendNotifications()
+                      .then((_) => Navigator.pop(context)),
+                  child: Text(
+                    'Allow',
+                    style: TextStyle(
+                      color: Colors.teal,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+      },
+    );
 
     init();
   }
@@ -53,9 +90,9 @@ class _ExpectedPageState extends State<ExpectedPage> {
   }
 
   void debounce(
-      VoidCallback callback, {
-        Duration duration = const Duration(milliseconds: 1000),
-      }) {
+    VoidCallback callback, {
+    Duration duration = const Duration(milliseconds: 1000),
+  }) {
     if (debouncer != null) {
       debouncer!.cancel();
     }
@@ -63,16 +100,20 @@ class _ExpectedPageState extends State<ExpectedPage> {
     debouncer = Timer(duration, callback);
   }
 
-  static Future<List<ReservationDetails>> getReservationDetails(String query) async {
+  static Future<List<ReservationDetails>> getReservationDetails(
+      String query) async {
     final url = Uri.parse(
-        '${base_url}/token:qwhu67fv56frt5drfx45e/reservations');
+        '${base_url}/token:qwhu67fv56frt5drfx45e/branches/${Strings.branchId}/reservations');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
       final List reservationDetails = json.decode(response.body);
 
-      return reservationDetails.map((json) => ReservationDetails.fromJson(json)).where((reservationDetail) {
-        final reservationPlateNumberLower = reservationDetail.reservationPlateNumber.toLowerCase();
+      return reservationDetails
+          .map((json) => ReservationDetails.fromJson(json))
+          .where((reservationDetail) {
+        final reservationPlateNumberLower =
+            reservationDetail.reservationPlateNumber.toLowerCase();
         final branchLower = reservationDetail.branchName.toLowerCase();
         final searchLower = query.toLowerCase();
 
@@ -85,7 +126,6 @@ class _ExpectedPageState extends State<ExpectedPage> {
   }
 
   Future init() async {
-
     // NotificationService().init();
 
     // await _notificationService.scheduleNotifications();
@@ -94,53 +134,49 @@ class _ExpectedPageState extends State<ExpectedPage> {
       isLoading = true;
     });
 
-    final reservationDetails = await getReservationDetails(query);
-
-    setState(() => this.reservations = reservationDetails);
-
-    setState(() {
-      isLoading = false;
-    });
-  }
-
-  Future getClientDetail(ReservationDetails reservationDetail) async {
-    var headersList = {
-      'Accept': '*/*',
-    };
-    var url = Uri.parse('http://127.0.0.1:5000/token:qwhu67fv56frt5drfx45e/clients/${reservationDetail.client}');
-
-    var req = http.Request('GET', url);
-    req.headers.addAll(headersList);
-
-    var res = await req.send();
-    final resBody = await res.stream.bytesToString();
-
-    if (res.statusCode >= 200 && res.statusCode < 300) {
-      var data = json.decode(resBody);
-      String clientFullName = data["fullName"].toString();
-      String clientPhone = data["phone"].toString();
-
-      fullName = clientFullName;
-      phone = clientPhone;
-
-      print(resBody);
-    }
-    else {
-      print(res.reasonPhrase);
+    while (true) {
+      final reservationDetails = await getReservationDetails(query);
+      setState(() {
+        this.reservations = reservationDetails;
+        isLoading = false;
+      });
+      await Future.delayed(Duration(seconds: 15));
     }
   }
+
+  // Future getClientDetail(ReservationDetails reservationDetail) async {
+  //   var headersList = {
+  //     'Accept': '*/*',
+  //   };
+  //   var url = Uri.parse(
+  //       '$base_url/token:qwhu67fv56frt5drfx45e/clients/${reservationDetail.client}');
+  //
+  //   var req = http.Request('GET', url);
+  //   req.headers.addAll(headersList);
+  //
+  //   var res = await req.send();
+  //   final resBody = await res.stream.bytesToString();
+  //
+  //   if (res.statusCode >= 200 && res.statusCode < 300) {
+  //     var data = json.decode(resBody);
+  //     String clientFullName = data["fullName"].toString();
+  //     String clientPhone = data["phone"].toString();
+  //
+  //     fullName = clientFullName;
+  //     phone = clientPhone;
+  //
+  //     print(resBody);
+  //   } else {
+  //     print(res.reasonPhrase);
+  //   }
+  // }
 
   Future editParked() async {
-    var headersList = {
-      'Accept': '*/*',
-      'Content-Type': 'application/json'
-    };
-    var url = Uri.parse('${base_url}/token:qwhu67fv56frt5drfx45e/reservations/$reserveId');
+    var headersList = {'Accept': '*/*', 'Content-Type': 'application/json'};
+    var url = Uri.parse(
+        '${base_url}/token:qwhu67fv56frt5drfx45e/reservations/$reserveId');
 
-    var body = {
-      "parked": isParked,
-      "completed" : isCompleted
-    };
+    var body = {"parked": isParked, "completed": isCompleted};
     var req = http.Request('PATCH', url);
     req.headers.addAll(headersList);
     req.body = json.encode(body);
@@ -150,25 +186,22 @@ class _ExpectedPageState extends State<ExpectedPage> {
 
     if (res.statusCode >= 200 && res.statusCode < 300) {
       print(resBody);
-    }
-    else {
+    } else {
       print(res.reasonPhrase);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-
-    if(reservations.length<1){
-
-    }
-    else{
+    if (reservations.length < 1) {
+    } else {
       DateTime startingTime =
-      DateTime.fromMillisecondsSinceEpoch(reservations[0].startingTime);
+          DateTime.fromMillisecondsSinceEpoch(reservations[0].startingTime);
       String startDate = DateFormat.yMMMd().format(startingTime);
       String formattedStartTime = DateFormat('h:mm a').format(startingTime);
 
-      DateTime finishTime = startingTime.add(Duration(hours: reservations[0].duration));
+      DateTime finishTime =
+          startingTime.add(Duration(hours: reservations[0].duration));
       String endTime = DateFormat('h:mm a').format(finishTime);
 
       this.startingTime = formattedStartTime;
@@ -180,6 +213,9 @@ class _ExpectedPageState extends State<ExpectedPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          Center(
+            child: Text(Strings.branchName),
+          ),
           buildSearch(),
           Container(
             margin: EdgeInsets.only(top: 10, left: 20),
@@ -357,332 +393,434 @@ class _ExpectedPageState extends State<ExpectedPage> {
           //         ),
           //       ),
           //     ),
-          isLoading ? Container(
-            height: MediaQuery.of(context).size.height/2-100,
-            alignment: Alignment.bottomCenter,
-            child: CircularProgressIndicator(),
-          ) : reservations.length > 0 ? ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: reservations.length,
-                itemBuilder: (context, index) {
+          isLoading
+              ? Container(
+                  height: MediaQuery.of(context).size.height / 2 - 100,
+                  alignment: Alignment.bottomCenter,
+                  child: CircularProgressIndicator(),
+                )
+              : reservations.length > 0
+                  ? ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: reservations.length,
+                      itemBuilder: (context, index) {
+                        final reservationDetail = reservations[index];
 
-                  final reservationDetail = reservations[index];
+                        DateTime startingTime =
+                            DateTime.fromMillisecondsSinceEpoch(
+                                reservationDetail.startingTime);
+                        String startDateEach =
+                            DateFormat.yMMMd().format(startingTime);
+                        String formattedStartTime =
+                            DateFormat('h:mm a').format(startingTime);
 
-                  DateTime startingTime =
-                  DateTime.fromMillisecondsSinceEpoch(reservationDetail.startingTime);
-                  String startDateEach = DateFormat.yMMMd().format(startingTime);
-                  String formattedStartTime = DateFormat('h:mm a').format(startingTime);
+                        // getClientDetail(reservationDetail);
 
-                  getClientDetail(reservationDetail);
+                        // DateTime startTime = DateTime.fromMillisecondsSinceEpoch(reservationDetail.startingTime);
+                        // String formattedstartTime = DateFormat('kk:00 a').format(startTime);
 
-                  // DateTime startTime = DateTime.fromMillisecondsSinceEpoch(reservationDetail.startingTime);
-                  // String formattedstartTime = DateFormat('kk:00 a').format(startTime);
-
-
-                  return reservationDetail.completed ? Padding(padding: EdgeInsets.all(0)) : index == 0 ? Container(
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(30, 0, 30, 10),
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ClientReservationDetails(reservationId: reservationDetail.id, client: reservationDetail.client, reservationPlateNumber: reservationDetail.reservationPlateNumber, branch: reservationDetail.branch, branchName: reservationDetail.branchName, slot: reservationDetail.slot, price: reservationDetail.price.toString(), startingTime: reservationDetail.startingTime.toString(), duration: reservationDetail.duration.toString(), parked: reservationDetail.parked,)));
-                        },
-                        child : Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15.0),
-                        ),
-                        color: Col.blackColor,
-                        elevation: 8,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius:
-                            BorderRadius.all(Radius.circular(15.0)),
-                            gradient: LinearGradient(
-                                colors: [Col.blackColor, Col.blackColor],
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(10, 10, 15, 10),
-                            child: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Center(
-                                  child: Text(
-                                    reservations[index].reservationPlateNumber,
-                                    style: TextStyle(
-                                      color: reservationDetail.expired ? Col.expiredColor : Col.whiteColor,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Nunito',
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(left: 20, top: 5),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        // "$formattedStartTime - $formattedFinishTime",
-                                        "$startDateEach ",
-                                        style: TextStyle(
-                                          color: Col.whiteColor,
-                                          fontSize: 16,
-                                          fontFamily: 'Nunito',
-                                        ),
-                                      ),
-                                      Text(
-                                        // "$formattedStartTime - $formattedFinishTime",
-                                        "|",
-                                        style: TextStyle(
-                                          color: Col.primary,
-                                          fontSize: 16,
-                                          fontFamily: 'Nunito',
-                                        ),
-                                      ),
-                                      Text(
-                                        // "$formattedStartTime - $formattedFinishTime",
-                                        " $formattedStartTime",
-                                        style: TextStyle(
-                                          color: Col.whiteColor,
-                                          fontSize: 16,
-                                          fontFamily: 'Nunito',
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(left: 20),
-                                  child: RichText(
-                                    text: TextSpan(
-                                      children: [
-                                        TextSpan(
-                                            style: TextStyle(
-                                              color: Col.whiteColor,
-                                              fontSize: 16,
-                                              fontWeight:
-                                              FontWeight.bold,
-                                              fontFamily: 'Nunito',
-                                              letterSpacing: 0.3,
-                                            ),
-                                            text: "Until"),
-                                        TextSpan(
-                                          style: TextStyle(
-                                            color: Col.whiteColor,
-                                            fontSize: 16,
-                                            fontFamily: 'Nunito',
-                                            letterSpacing: 0.3,
+                        return reservationDetail.completed
+                            ? Padding(padding: EdgeInsets.all(0))
+                            : index == 0
+                                ? Container(
+                                    child: Padding(
+                                      padding:
+                                          EdgeInsets.fromLTRB(30, 0, 30, 10),
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      ClientReservationDetails(
+                                                        reservationId:
+                                                            reservationDetail
+                                                                .id,
+                                                        client:
+                                                            reservationDetail
+                                                                .client,
+                                                        reservationPlateNumber:
+                                                            reservationDetail
+                                                                .reservationPlateNumber,
+                                                        branch:
+                                                            reservationDetail
+                                                                .branch,
+                                                        branchName:
+                                                            reservationDetail
+                                                                .branchName,
+                                                        slot: reservationDetail
+                                                            .slot,
+                                                        price: reservationDetail
+                                                            .price
+                                                            .toString(),
+                                                        startingTime:
+                                                            reservationDetail
+                                                                .startingTime
+                                                                .toString(),
+                                                        duration:
+                                                            reservationDetail
+                                                                .duration
+                                                                .toString(),
+                                                        parked:
+                                                            reservationDetail
+                                                                .parked,
+                                                      )));
+                                        },
+                                        child: Card(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(15.0),
                                           ),
-                                          text:
-                                          " $endTime",
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(left: 20),
-                                  child: RichText(
-                                    text: TextSpan(
-                                      children: [
-                                        TextSpan(
-                                            style: TextStyle(
-                                              color: Col.whiteColor,
-                                              fontSize: 16,
-                                              fontWeight:
-                                              FontWeight.bold,
-                                              fontFamily: 'Nunito',
-                                              letterSpacing: 0.3,
+                                          color: Col.blackColor,
+                                          elevation: 8,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(15.0)),
+                                              gradient: LinearGradient(
+                                                  colors: [
+                                                    Col.blackColor,
+                                                    Col.blackColor
+                                                  ],
+                                                  begin: Alignment.centerLeft,
+                                                  end: Alignment.centerRight),
                                             ),
-                                            text: "Slot"),
-                                        TextSpan(
-                                          style: TextStyle(
-                                            color: Col.whiteColor,
-                                            fontSize: 16,
-                                            fontFamily: 'Nunito',
-                                            letterSpacing: 0.3,
-                                          ),
-                                          text:
-                                          " ${reservations[index].slot}",
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(left: 20),
-                                  child: RichText(
-                                    text: TextSpan(
-                                      children: [
-                                        TextSpan(
-                                            style: TextStyle(
-                                              color: Col.whiteColor,
-                                              fontSize: 16,
-                                              fontWeight:
-                                              FontWeight.bold,
-                                              fontFamily: 'Nunito',
-                                              letterSpacing: 0.3,
+                                            child: Padding(
+                                              padding: EdgeInsets.fromLTRB(
+                                                  10, 10, 15, 10),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: <Widget>[
+                                                  Center(
+                                                    child: Text(
+                                                      reservations[index]
+                                                          .reservationPlateNumber,
+                                                      style: TextStyle(
+                                                        color: reservationDetail
+                                                                .expired
+                                                            ? Col.expiredColor
+                                                            : Col.whiteColor,
+                                                        fontSize: 24,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontFamily: 'Nunito',
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding: EdgeInsets.only(
+                                                        left: 20, top: 5),
+                                                    child: Row(
+                                                      children: [
+                                                        Text(
+                                                          // "$formattedStartTime - $formattedFinishTime",
+                                                          "$startDateEach ",
+                                                          style: TextStyle(
+                                                            color:
+                                                                Col.whiteColor,
+                                                            fontSize: 16,
+                                                            fontFamily:
+                                                                'Nunito',
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          // "$formattedStartTime - $formattedFinishTime",
+                                                          "|",
+                                                          style: TextStyle(
+                                                            color: Col.primary,
+                                                            fontSize: 16,
+                                                            fontFamily:
+                                                                'Nunito',
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          // "$formattedStartTime - $formattedFinishTime",
+                                                          " $formattedStartTime",
+                                                          style: TextStyle(
+                                                            color:
+                                                                Col.whiteColor,
+                                                            fontSize: 16,
+                                                            fontFamily:
+                                                                'Nunito',
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding: EdgeInsets.only(
+                                                        left: 20),
+                                                    child: RichText(
+                                                      text: TextSpan(
+                                                        children: [
+                                                          TextSpan(
+                                                              style: TextStyle(
+                                                                color: Col
+                                                                    .whiteColor,
+                                                                fontSize: 16,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontFamily:
+                                                                    'Nunito',
+                                                                letterSpacing:
+                                                                    0.3,
+                                                              ),
+                                                              text: "Until"),
+                                                          TextSpan(
+                                                            style: TextStyle(
+                                                              color: Col
+                                                                  .whiteColor,
+                                                              fontSize: 16,
+                                                              fontFamily:
+                                                                  'Nunito',
+                                                              letterSpacing:
+                                                                  0.3,
+                                                            ),
+                                                            text: " $endTime",
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding: EdgeInsets.only(
+                                                        left: 20),
+                                                    child: RichText(
+                                                      text: TextSpan(
+                                                        children: [
+                                                          TextSpan(
+                                                              style: TextStyle(
+                                                                color: Col
+                                                                    .whiteColor,
+                                                                fontSize: 16,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontFamily:
+                                                                    'Nunito',
+                                                                letterSpacing:
+                                                                    0.3,
+                                                              ),
+                                                              text: "Slot"),
+                                                          TextSpan(
+                                                            style: TextStyle(
+                                                              color: Col
+                                                                  .whiteColor,
+                                                              fontSize: 16,
+                                                              fontFamily:
+                                                                  'Nunito',
+                                                              letterSpacing:
+                                                                  0.3,
+                                                            ),
+                                                            text:
+                                                                " ${reservations[index].slot}",
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding: EdgeInsets.only(
+                                                        left: 20),
+                                                    child: RichText(
+                                                      text: TextSpan(
+                                                        children: [
+                                                          TextSpan(
+                                                              style: TextStyle(
+                                                                color: Col
+                                                                    .whiteColor,
+                                                                fontSize: 16,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontFamily:
+                                                                    'Nunito',
+                                                                letterSpacing:
+                                                                    0.3,
+                                                              ),
+                                                              text: "Phone"),
+                                                          TextSpan(
+                                                            style: TextStyle(
+                                                              color: Col
+                                                                  .whiteColor,
+                                                              fontSize: 16,
+                                                              fontFamily:
+                                                                  'Nunito',
+                                                              letterSpacing:
+                                                                  0.3,
+                                                            ),
+                                                            text: " {phone}",
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  Center(
+                                                    child: RaisedButton(
+                                                      onPressed: () {},
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              vertical: 2,
+                                                              horizontal: 70),
+                                                      color: Col.primary,
+                                                      child: Text(
+                                                        'Parked',
+                                                        style: TextStyle(
+                                                          color: Col.blackColor,
+                                                          fontSize: 16,
+                                                          fontFamily: 'Nunito',
+                                                          letterSpacing: 0.3,
+                                                        ),
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                      ),
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          20)),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
-                                            text: "Phone"),
-                                        TextSpan(
-                                          style: TextStyle(
-                                            color: Col.whiteColor,
-                                            fontSize: 16,
-                                            fontFamily: 'Nunito',
-                                            letterSpacing: 0.3,
                                           ),
-                                          text:
-                                          " {phone}",
+                                          margin:
+                                              EdgeInsets.fromLTRB(0, 10, 0, 0),
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: 10,),
-                                Center(
-                                  child: RaisedButton(
-                                    onPressed: () {
-                                    },
-                                    padding: EdgeInsets.symmetric(
-                                        vertical: 2, horizontal: 70),
-                                    color: Col.primary,
-                                    child: Text(
-                                      'Parked',
-                                      style: TextStyle(
-                                        color: Col.blackColor,
-                                        fontSize: 16,
-                                        fontFamily: 'Nunito',
-                                        letterSpacing: 0.3,
                                       ),
-                                      textAlign: TextAlign.center,
                                     ),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20)),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                  )
+                                : buildReservation(reservationDetail,
+                                    formattedStartTime, startDateEach);
+                      },
+                    )
+                  : Center(
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 50),
+                        child: Text("No rereservations"),
                       ),
                     ),
-                  ),
-                  ) : buildReservation(reservationDetail, formattedStartTime, startDateEach);
-                },
-          ) : Center(
-            child: Padding(
-              padding: EdgeInsets.only(top: 50),
-              child: Text("No rereservations"),
-            ),
-          ),
         ],
       ),
     );
   }
 
   Widget buildSearch() => SearchWidget(
-    text: query,
-    hintText: 'Search by plate number',
-    onChanged: searchReservations,
-  );
+        text: query,
+        hintText: 'Search by plate number',
+        onChanged: searchReservations,
+      );
 
   Future searchReservations(String query) async => debounce(() async {
-    final reservationDetails = await getReservationDetails(query);
+        final reservationDetails = await getReservationDetails(query);
 
-    if (!mounted) return;
+        if (!mounted) return;
 
-    setState(() {
-      this.query = query;
-      this.reservations = reservationDetails;
-    });
-  });
+        setState(() {
+          this.query = query;
+          this.reservations = reservationDetails;
+        });
+      });
 
-  Widget buildReservation(ReservationDetails reservationDetail, String formattedstartTime, String startDateEach) =>
+  Widget buildReservation(ReservationDetails reservationDetail,
+          String formattedstartTime, String startDateEach) =>
       GestureDetector(
-    onTap: () {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => ClientReservationDetails(reservationId: reservationDetail.id, client: reservationDetail.client, reservationPlateNumber: reservationDetail.reservationPlateNumber, branch: reservationDetail.branch, branchName: reservationDetail.branchName, slot: reservationDetail.slot, price: reservationDetail.price.toString(), startingTime: reservationDetail.startingTime.toString(), duration: reservationDetail.duration.toString(), parked: reservationDetail.parked,)));
-    },
-    child: Padding(
-      padding: EdgeInsets.fromLTRB(30, 0, 30, 5),
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
-        ),
-        color: Col.blackColor,
-        elevation: 8,
+        onTap: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ClientReservationDetails(
+                        reservationId: reservationDetail.id,
+                        client: reservationDetail.client,
+                        reservationPlateNumber:
+                            reservationDetail.reservationPlateNumber,
+                        branch: reservationDetail.branch,
+                        branchName: reservationDetail.branchName,
+                        slot: reservationDetail.slot,
+                        price: reservationDetail.price.toString(),
+                        startingTime: reservationDetail.startingTime.toString(),
+                        duration: reservationDetail.duration.toString(),
+                        parked: reservationDetail.parked,
+                      )));
+        },
         child: Padding(
-          padding:
-          EdgeInsets.fromLTRB(0, 16, 0, 16),
-          child: Column(
-            crossAxisAlignment:
-            CrossAxisAlignment.center,
-            children: <Widget>[
-              Center(
-                child: Text(
-                  reservationDetail.reservationPlateNumber,
-                  style: TextStyle(
-                    color: reservationDetail.expired ? Col.expiredColor : Col.whiteColor,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Nunito',
+          padding: EdgeInsets.fromLTRB(30, 0, 30, 5),
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.0),
+            ),
+            color: Col.blackColor,
+            elevation: 8,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(0, 16, 0, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Center(
+                    child: Text(
+                      reservationDetail.reservationPlateNumber,
+                      style: TextStyle(
+                        color: reservationDetail.expired
+                            ? Col.expiredColor
+                            : Col.whiteColor,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Nunito',
+                      ),
+                    ),
+                    //     ),
+                    // ],
                   ),
-                ),
-                //     ),
-                // ],
-              ),
-              Container(
-                width: double.infinity,
-                child: Center(
-                  child: Row(
-                    mainAxisAlignment:
-                    MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        // "$formattedStartTime - $formattedFinishTime",
-                        "$startDateEach ",
-                        style: TextStyle(
-                          color: Col.whiteColor,
-                          fontSize: 18,
-                          fontFamily: 'Nunito',
-                        ),
+                  Container(
+                    width: double.infinity,
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            // "$formattedStartTime - $formattedFinishTime",
+                            "$startDateEach ",
+                            style: TextStyle(
+                              color: Col.whiteColor,
+                              fontSize: 18,
+                              fontFamily: 'Nunito',
+                            ),
+                          ),
+                          Text(
+                            // "$formattedStartTime - $formattedFinishTime",
+                            "|",
+                            style: TextStyle(
+                              color: Col.primary,
+                              fontSize: 18,
+                              fontFamily: 'Nunito',
+                            ),
+                          ),
+                          Text(
+                            // "$formattedStartTime - $formattedFinishTime",
+                            " $formattedstartTime",
+                            style: TextStyle(
+                              color: Col.whiteColor,
+                              fontSize: 18,
+                              fontFamily: 'Nunito',
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        // "$formattedStartTime - $formattedFinishTime",
-                        "|",
-                        style: TextStyle(
-                          color: Col.primary,
-                          fontSize: 18,
-                          fontFamily: 'Nunito',
-                        ),
-                      ),
-                      Text(
-                        // "$formattedStartTime - $formattedFinishTime",
-                        " $formattedstartTime",
-                        style: TextStyle(
-                          color: Col.whiteColor,
-                          fontSize: 18,
-                          fontFamily: 'Nunito',
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
+            margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
           ),
         ),
-        margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
-      ),
-    ),
-  );
-
+      );
 }

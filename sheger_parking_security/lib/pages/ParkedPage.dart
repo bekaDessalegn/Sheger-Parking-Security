@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sheger_parking_security/constants/api.dart';
 import 'package:sheger_parking_security/constants/colors.dart';
+import 'package:sheger_parking_security/constants/strings.dart';
 import 'package:sheger_parking_security/models/ReservationDetails.dart';
 import 'package:http/http.dart' as http;
 import 'package:sheger_parking_security/pages/ClientReservationDetails.dart';
@@ -51,7 +52,7 @@ class _ParkedPageState extends State<ParkedPage> {
   static Future<List<ReservationDetails>> getReservationDetails(
       String query) async {
     final url = Uri.parse(
-        '${base_url}/token:qwhu67fv56frt5drfx45e/reservations');
+        '${base_url}/token:qwhu67fv56frt5drfx45e/branches/${Strings.branchId}/reservations');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {

@@ -53,9 +53,26 @@ class _LoginPageState extends State<LoginPage> {
 
       var data = json.decode(resBody);
       String email = data["email"].toString();
+      String branchId = data["branch"].toString();
 
+      var url = Uri.parse('${base_url}/token:qwhu67fv56frt5drfx45e/branches/${branchId}');
+      var req = http.Request('GET', url);
+      req.headers.addAll(headersList);
+
+      var resBranch = await req.send();
+      final resBodyBranch = await resBranch.stream.bytesToString();
+      String branchName = "";
+      if (resBranch.statusCode >= 200 && resBranch.statusCode < 300) {
+        var dataBranch = json.decode(resBodyBranch);
+        branchName = dataBranch["name"].toString();
+      }
       final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
       sharedPreferences.setString("email", email);
+      sharedPreferences.setString("branchId", branchId);
+      sharedPreferences.setString("branchName", branchName);
+
+      Strings.branchId = branchId;
+      Strings.branchName = branchName;
 
       Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
     }
@@ -69,7 +86,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       backgroundColor: Col.background,
       body:SingleChildScrollView(
         child: Container(
@@ -246,71 +263,6 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              Padding(padding: EdgeInsets.fromLTRB(25, 10, 25, 0),
-                child: Container(
-                  width: double.infinity,
-                  child: TextButton(
-                    onPressed: (){
-                      showDialog(context: context, builder: (context) {
-                        return AlertDialog(
-                          title: Text("Forgot Password ?",
-                            style: TextStyle(
-                              color: Col.Onbackground,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Nunito',
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                          content: TextField(
-                            decoration: InputDecoration(
-                              hintText: "",
-                              hintStyle: TextStyle(
-                                color: Col.textfieldLabel,
-                                fontSize: 14,
-                                fontFamily: 'Nunito',
-                                letterSpacing: 0.1,
-                              ),
-                              labelText: "Email",
-                              labelStyle: TextStyle(
-                                color: Col.textfieldLabel,
-                                fontSize: 14,
-                                fontFamily: 'Nunito',
-                                letterSpacing: 0,
-                              ),
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.emailAddress,
-                          ),
-                          actions: [
-                            FlatButton(onPressed: (){
-                              Navigator.of(context).pop(AlertDialog());
-                            }, child: Text("Submit",
-                              style: TextStyle(
-                                fontSize: 18,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                            ),
-                          ],
-                          elevation: 24.0,
-                        );
-                      });
-                    },
-                    child: Text("Forgot password",
-                      style: TextStyle(
-                        color: Col.primary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Nunito',
-                        letterSpacing: 0.3,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-              ),
-
             ],
           ),
         ),

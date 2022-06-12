@@ -85,6 +85,10 @@ class _HomePageState extends State<HomePage> {
                         FlatButton(onPressed: () async {
                           final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
                           sharedPreferences.remove("email");
+                          sharedPreferences.remove("branchId");
+                          sharedPreferences.remove("branchName");
+                          Strings.branchId = false;
+                          Strings.branchName = "";
                           Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
                         }, child: Text("Log out",
                           style: TextStyle(

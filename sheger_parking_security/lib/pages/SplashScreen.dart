@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sheger_parking_security/constants/colors.dart';
+import 'package:sheger_parking_security/constants/strings.dart';
 import 'package:sheger_parking_security/pages/HomePage.dart';
 import 'package:sheger_parking_security/pages/LoginPage.dart';
 
@@ -21,6 +22,10 @@ class _SplashScreenState extends State<SplashScreen> {
   Future getValidationData() async {
     final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var obtainedEmail = sharedPreferences.getString("email");
+    var obtainedBranchId = sharedPreferences.getString("branchId");
+    var obtainedBranchName = sharedPreferences.getString("branchName");
+    Strings.branchId = obtainedBranchId;
+    Strings.branchName = obtainedBranchName;
     setState(() {
       finalEmail = obtainedEmail;
     });
