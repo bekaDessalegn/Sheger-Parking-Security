@@ -37,8 +37,6 @@ class _ParkedPageState extends State<ParkedPage> {
 
   bool noParked = true;
 
-  // NotificationService _notificationService = NotificationService();
-
   @override
   void initState() {
     super.initState();
@@ -127,10 +125,6 @@ class _ParkedPageState extends State<ParkedPage> {
   }
 
   Future init() async {
-    // NotificationService().init();
-
-    // await _notificationService.scheduleNotifications();
-
     setState(() {
       isLoading = true;
     });
@@ -154,33 +148,6 @@ class _ParkedPageState extends State<ParkedPage> {
     }
   }
 
-  // Future getClientDetail(ReservationDetails reservationDetail) async {
-  //   var headersList = {
-  //     'Accept': '*/*',
-  //   };
-  //   var url = Uri.parse(
-  //       '$base_url/token:qwhu67fv56frt5drfx45e/clients/${reservationDetail.client}');
-  //
-  //   var req = http.Request('GET', url);
-  //   req.headers.addAll(headersList);
-  //
-  //   var res = await req.send();
-  //   final resBody = await res.stream.bytesToString();
-  //
-  //   if (res.statusCode >= 200 && res.statusCode < 300) {
-  //     var data = json.decode(resBody);
-  //     String clientFullName = data["fullName"].toString();
-  //     String clientPhone = data["phone"].toString();
-  //
-  //     fullName = clientFullName;
-  //     phone = clientPhone;
-  //
-  //     print(resBody);
-  //   } else {
-  //     print(res.reasonPhrase);
-  //   }
-  // }
-
   Future editParked(String reserveId) async {
     var headersList = {'Accept': '*/*', 'Content-Type': 'application/json'};
     var url = Uri.parse(
@@ -195,10 +162,7 @@ class _ParkedPageState extends State<ParkedPage> {
     final resBody = await res.stream.bytesToString();
 
     if (res.statusCode >= 200 && res.statusCode < 300) {
-      print(resBody);
-    } else {
-      print(res.reasonPhrase);
-    }
+    } else {}
   }
 
   @override
@@ -286,11 +250,6 @@ class _ParkedPageState extends State<ParkedPage> {
                         String formattedStartTime =
                             DateFormat('h:mm a').format(startingTime);
 
-                        // getClientDetail(reservationDetail);
-
-                        // DateTime startTime = DateTime.fromMillisecondsSinceEpoch(reservationDetail.startingTime);
-                        // String formattedstartTime = DateFormat('kk:00 a').format(startTime);
-
                         return reservationDetail.completed
                             ? Padding(padding: EdgeInsets.all(0))
                             : index == 0
@@ -304,43 +263,36 @@ class _ParkedPageState extends State<ParkedPage> {
                                                 Navigator.push(
                                                     context,
                                                     MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            ClientReservationDetails(
-                                                              reservationId:
-                                                                  reservationDetail
-                                                                      .id,
-                                                              client:
-                                                                  reservationDetail
-                                                                      .client,
-                                                              reservationPlateNumber:
-                                                                  reservationDetail
-                                                                      .reservationPlateNumber,
-                                                              branch:
-                                                                  reservationDetail
-                                                                      .branch,
-                                                              branchName:
-                                                                  reservationDetail
-                                                                      .branchName,
-                                                              slot:
-                                                                  reservationDetail
-                                                                      .slot,
-                                                              price:
-                                                                  reservationDetail
-                                                                      .price
-                                                                      .toString(),
-                                                              startingTime:
-                                                                  reservationDetail
-                                                                      .startingTime
-                                                                      .toString(),
-                                                              duration:
-                                                                  reservationDetail
-                                                                      .duration
-                                                                      .toString(),
-                                                              parked:
-                                                                  reservationDetail
-                                                                      .parked,
-                                                                completed: reservationDetail.completed
-                                                            )));
+                                                        builder: (context) => ClientReservationDetails(
+                                                            reservationId:
+                                                                reservationDetail
+                                                                    .id,
+                                                            client: reservationDetail
+                                                                .client,
+                                                            reservationPlateNumber:
+                                                                reservationDetail
+                                                                    .reservationPlateNumber,
+                                                            branch: reservationDetail
+                                                                .branch,
+                                                            branchName:
+                                                                reservationDetail
+                                                                    .branchName,
+                                                            slot: reservationDetail
+                                                                .slot,
+                                                            price: reservationDetail
+                                                                .price
+                                                                .toString(),
+                                                            startingTime:
+                                                                reservationDetail
+                                                                    .startingTime
+                                                                    .toString(),
+                                                            duration:
+                                                                reservationDetail
+                                                                    .duration
+                                                                    .toString(),
+                                                            parked: reservationDetail
+                                                                .parked,
+                                                            completed: reservationDetail.completed)));
                                               },
                                               child: Card(
                                                 shape: RoundedRectangleBorder(
@@ -403,7 +355,6 @@ class _ParkedPageState extends State<ParkedPage> {
                                                           child: Row(
                                                             children: [
                                                               Text(
-                                                                // "$formattedStartTime - $formattedFinishTime",
                                                                 "$startDateEach ",
                                                                 style:
                                                                     TextStyle(
@@ -415,7 +366,6 @@ class _ParkedPageState extends State<ParkedPage> {
                                                                 ),
                                                               ),
                                                               Text(
-                                                                // "$formattedStartTime - $formattedFinishTime",
                                                                 "|",
                                                                 style:
                                                                     TextStyle(
@@ -427,7 +377,6 @@ class _ParkedPageState extends State<ParkedPage> {
                                                                 ),
                                                               ),
                                                               Text(
-                                                                // "$formattedStartTime - $formattedFinishTime",
                                                                 " $formattedStartTime",
                                                                 style:
                                                                     TextStyle(
@@ -746,19 +695,18 @@ class _ParkedPageState extends State<ParkedPage> {
               context,
               MaterialPageRoute(
                   builder: (context) => ClientReservationDetails(
-                        reservationId: reservationDetail.id,
-                        client: reservationDetail.client,
-                        reservationPlateNumber:
-                            reservationDetail.reservationPlateNumber,
-                        branch: reservationDetail.branch,
-                        branchName: reservationDetail.branchName,
-                        slot: reservationDetail.slot,
-                        price: reservationDetail.price.toString(),
-                        startingTime: reservationDetail.startingTime.toString(),
-                        duration: reservationDetail.duration.toString(),
-                        parked: reservationDetail.parked,
-                      completed: reservationDetail.completed
-                      )));
+                      reservationId: reservationDetail.id,
+                      client: reservationDetail.client,
+                      reservationPlateNumber:
+                          reservationDetail.reservationPlateNumber,
+                      branch: reservationDetail.branch,
+                      branchName: reservationDetail.branchName,
+                      slot: reservationDetail.slot,
+                      price: reservationDetail.price.toString(),
+                      startingTime: reservationDetail.startingTime.toString(),
+                      duration: reservationDetail.duration.toString(),
+                      parked: reservationDetail.parked,
+                      completed: reservationDetail.completed)));
         },
         child: Padding(
           padding: EdgeInsets.fromLTRB(30, 0, 30, 5),
@@ -785,8 +733,6 @@ class _ParkedPageState extends State<ParkedPage> {
                         fontFamily: 'Nunito',
                       ),
                     ),
-                    //     ),
-                    // ],
                   ),
                   Container(
                     width: double.infinity,
@@ -795,7 +741,6 @@ class _ParkedPageState extends State<ParkedPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            // "$formattedStartTime - $formattedFinishTime",
                             "$startDateEach ",
                             style: TextStyle(
                               color: Col.whiteColor,
@@ -804,7 +749,6 @@ class _ParkedPageState extends State<ParkedPage> {
                             ),
                           ),
                           Text(
-                            // "$formattedStartTime - $formattedFinishTime",
                             "|",
                             style: TextStyle(
                               color: Col.primary,
@@ -813,7 +757,6 @@ class _ParkedPageState extends State<ParkedPage> {
                             ),
                           ),
                           Text(
-                            // "$formattedStartTime - $formattedFinishTime",
                             " $formattedstartTime",
                             style: TextStyle(
                               color: Col.whiteColor,

@@ -36,11 +36,12 @@ void main() {
   runApp(MyApp());
 }
 
-Future fetchToNotify() async{
+Future fetchToNotify() async {
   List<String> notified = [];
   while (true) {
-    if(Strings.branchId != false){
-      final reservationDetails = await ExpectedPageState.getReservationDetails('');
+    if (Strings.branchId != false) {
+      final reservationDetails =
+          await ExpectedPageState.getReservationDetails('');
       reservationDetails.forEach((element) {
         if (!element.expired) return;
         var startTimeInM = element.startingTime / 60000;
@@ -59,7 +60,6 @@ Future fetchToNotify() async{
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     fetchToNotify();
@@ -70,8 +70,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home:
-      SplashScreen(),
+      home: SplashScreen(),
     );
   }
 }

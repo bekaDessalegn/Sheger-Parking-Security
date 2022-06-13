@@ -34,13 +34,22 @@ class ClientReservationDetails extends StatefulWidget {
       required this.startingTime,
       required this.duration,
       required this.parked,
-      required this.completed
-      });
+      required this.completed});
 
   @override
   _ClientReservationDetailsState createState() =>
-      _ClientReservationDetailsState(reservationId, client,
-          reservationPlateNumber, branch, branchName, slot, price, startingTime, duration, parked, completed);
+      _ClientReservationDetailsState(
+          reservationId,
+          client,
+          reservationPlateNumber,
+          branch,
+          branchName,
+          slot,
+          price,
+          startingTime,
+          duration,
+          parked,
+          completed);
 }
 
 class _ClientReservationDetailsState extends State<ClientReservationDetails> {
@@ -67,15 +76,14 @@ class _ClientReservationDetailsState extends State<ClientReservationDetails> {
       this.startingTime,
       this.duration,
       this.parked,
-      this.completed
-      );
+      this.completed);
 
   late String startTime;
   late String startDate;
 
   bool isParked = false;
   bool isCompleted = false;
-  bool loading =  true;
+  bool loading = true;
 
   Future editParked(String reserveId) async {
     var headersList = {'Accept': '*/*', 'Content-Type': 'application/json'};
@@ -91,49 +99,38 @@ class _ClientReservationDetailsState extends State<ClientReservationDetails> {
     final resBody = await res.stream.bytesToString();
 
     if (res.statusCode >= 200 && res.statusCode < 300) {
-      print(resBody);
-    } else {
-      print(res.reasonPhrase);
-    }
+    } else {}
   }
 
   late String fullName;
   late String phone;
 
   Future getClientDetail() async {
+    var headersList = {
+      'Accept': '*/*',
+    };
+    var url =
+        Uri.parse('$base_url/token:qwhu67fv56frt5drfx45e/clients/$client');
 
-    print(client);
-      var headersList = {
-        'Accept': '*/*',
-      };
-      var url = Uri.parse(
-          '$base_url/token:qwhu67fv56frt5drfx45e/clients/$client');
-      print(url);
+    var req = http.Request('GET', url);
+    req.headers.addAll(headersList);
 
-      var req = http.Request('GET', url);
-      req.headers.addAll(headersList);
+    var res = await req.send();
+    final resBody = await res.stream.bytesToString();
 
-      var res = await req.send();
-      final resBody = await res.stream.bytesToString();
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      var data = json.decode(resBody);
+      String clientFullName = data["fullName"].toString();
+      String clientPhone = data["phone"].toString();
 
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        var data = json.decode(resBody);
-        String clientFullName = data["fullName"].toString();
-        String clientPhone = data["phone"].toString();
+      fullName = clientFullName;
+      phone = clientPhone;
 
-        fullName = clientFullName;
-        phone = clientPhone;
-
-        setState(() {
-          loading = false;
-        });
-
-        print(resBody);
-      } else {
-        print(resBody);
-        print(res.reasonPhrase);
-      }
-    }
+      setState(() {
+        loading = false;
+      });
+    } else {}
+  }
 
   @override
   void initState() {
@@ -141,14 +138,13 @@ class _ClientReservationDetailsState extends State<ClientReservationDetails> {
 
     getClientDetail();
 
-    DateTime startTime = DateTime.fromMillisecondsSinceEpoch(int.parse(startingTime));
+    DateTime startTime =
+        DateTime.fromMillisecondsSinceEpoch(int.parse(startingTime));
     String startDate = DateFormat.yMMMd().format(startTime);
     String formattedStartTime = DateFormat('h:mm a').format(startTime);
-    // String datetime = startingTime.hour.toString().padLeft(2, '0') + ":" + startingTime.minute.toString().padLeft(2, '0');
 
     this.startTime = formattedStartTime;
     this.startDate = startDate;
-
   }
 
   @override
@@ -202,334 +198,344 @@ class _ClientReservationDetailsState extends State<ClientReservationDetails> {
         ),
         preferredSize: Size.fromHeight(kToolbarHeight),
       ),
-      body: loading ? Center(child: CircularProgressIndicator(color: Col.primary,)) : SingleChildScrollView(
-        child: Container(
-          color: Col.background,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Padding(
-                padding: EdgeInsets.fromLTRB(0, 40, 0, 0),
-                child: Center(
-                  child: RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                            style: TextStyle(
-                              color: Col.blackColor,
-                              fontSize: 20,
-                              fontFamily: 'Nunito',
-                              letterSpacing: 0.3,
-                            ),
-                            text: "Reservation at "),
-                        TextSpan(
-                          style: TextStyle(
-                            color: Col.blackColor,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Nunito',
-                            letterSpacing: 0.3,
+      body: loading
+          ? Center(
+              child: CircularProgressIndicator(
+              color: Col.primary,
+            ))
+          : SingleChildScrollView(
+              child: Container(
+                color: Col.background,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(0, 40, 0, 0),
+                      child: Center(
+                        child: RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                  style: TextStyle(
+                                    color: Col.blackColor,
+                                    fontSize: 20,
+                                    fontFamily: 'Nunito',
+                                    letterSpacing: 0.3,
+                                  ),
+                                  text: "Reservation at "),
+                              TextSpan(
+                                style: TextStyle(
+                                  color: Col.blackColor,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Nunito',
+                                  letterSpacing: 0.3,
+                                ),
+                                text: branchName,
+                              ),
+                            ],
                           ),
-                          text:
-                          branchName,
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Center(
-                child: SizedBox(
-                  width: 200,
-                  child: Divider(
-                    color: Col.primary,
-                    thickness: 2,
-                  ),
-                ),
-              ),
-              SizedBox(height: 10,),
-              Padding(
-                padding: EdgeInsets.fromLTRB(30, 5, 0, 0),
-                child: Text(
-                  "Plate number",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Nunito',
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(30, 0, 0, 0),
-                child: Text(
-                  reservationPlateNumber,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontFamily: 'Nunito',
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-              SizedBox(height: 10,),
-              Padding(
-                padding: EdgeInsets.fromLTRB(30, 5, 0, 0),
-                child: Text(
-                  "Date",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Nunito',
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(30, 0, 0, 0),
-                child: Text(
-                  startDate,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontFamily: 'Nunito',
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-              SizedBox(height: 10,),
-              Padding(
-                padding: EdgeInsets.fromLTRB(30, 5, 0, 0),
-                child: Text(
-                  "Start time",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Nunito',
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(30, 0, 0, 0),
-                child: Text(
-                  startTime,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontFamily: 'Nunito',
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-              SizedBox(height: 10,),
-              Padding(
-                padding: EdgeInsets.fromLTRB(30, 5, 0, 0),
-                child: Text(
-                  "Duration",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Nunito',
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(30, 0, 0, 0),
-                child: Text(
-                  "$duration:00 hours",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontFamily: 'Nunito',
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-              SizedBox(height: 10,),
-              Padding(
-                padding: EdgeInsets.fromLTRB(30, 5, 0, 0),
-                child: Text(
-                  "Slot",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Nunito',
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(30, 0, 0, 0),
-                child: Text(
-                  slot,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontFamily: 'Nunito',
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-              SizedBox(height: 10,),
-              Padding(
-                padding: EdgeInsets.fromLTRB(30, 5, 0, 0),
-                child: Text(
-                  "User",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 19,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Nunito',
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(40, 5, 0, 0),
-                child: Text(
-                  "Full Name",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Nunito',
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(40, 0, 0, 0),
-                child: Text(
-                  "$fullName",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontFamily: 'Nunito',
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-              SizedBox(height: 10,),
-              Padding(
-                padding: EdgeInsets.fromLTRB(40, 0, 0, 0),
-                child: Text(
-                  "Phone Number",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Nunito',
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(40, 0, 0, 0),
-                child: Text(
-                  "$phone",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontFamily: 'Nunito',
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-              SizedBox(height: 10,),
-              Center(
-                child: SizedBox(
-                  width: 200,
-                  child: Divider(
-                    color: Col.primary,
-                    thickness: 2,
-                  ),
-                ),
-              ),
-              completed ? SizedBox() : (parked)
-                  ? Center(
-                    child: Container(
-                width:
-                220,
-                child: RaisedButton(
-                    onPressed: () async {
-                      setState(() {
-                        isParked = true;
-                        isCompleted = true;
-                      });
-                      await editParked(reservationId);
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
-                    },
-                    color: Col.primary,
-                    child: Text(
-                      'Left',
-                      style: TextStyle(
-                        color: Col
-                            .blackColor,
-                        fontSize: 16,
-                        fontFamily:
-                        'Nunito',
-                        letterSpacing:
-                        0.3,
                       ),
-                      textAlign:
-                      TextAlign
-                          .center,
                     ),
-                    shape: RoundedRectangleBorder(
-                        borderRadius:
-                        BorderRadius
-                            .circular(
-                            20)),
-                ),
-              ),
-                  )
-                  : Center(
-                    child: Container(
-                width:
-                220,
-                child: RaisedButton(
-                    onPressed: () async {
-                      setState(() {
-                        isParked = true;
-                        parked = true;
-                      });
-                      await editParked(reservationId);
-                    },
-                    color: Col.primary,
-                    child: Text(
-                      'Parked',
-                      style: TextStyle(
-                        color: Col
-                            .blackColor,
-                        fontSize: 16,
-                        fontFamily:
-                        'Nunito',
-                        letterSpacing:
-                        0.3,
+                    Center(
+                      child: SizedBox(
+                        width: 200,
+                        child: Divider(
+                          color: Col.primary,
+                          thickness: 2,
+                        ),
                       ),
-                      textAlign:
-                      TextAlign
-                          .center,
                     ),
-                    shape: RoundedRectangleBorder(
-                        borderRadius:
-                        BorderRadius
-                            .circular(
-                            20)),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(30, 5, 0, 0),
+                      child: Text(
+                        "Plate number",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Nunito',
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(30, 0, 0, 0),
+                      child: Text(
+                        reservationPlateNumber,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontFamily: 'Nunito',
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(30, 5, 0, 0),
+                      child: Text(
+                        "Date",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Nunito',
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(30, 0, 0, 0),
+                      child: Text(
+                        startDate,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontFamily: 'Nunito',
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(30, 5, 0, 0),
+                      child: Text(
+                        "Start time",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Nunito',
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(30, 0, 0, 0),
+                      child: Text(
+                        startTime,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontFamily: 'Nunito',
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(30, 5, 0, 0),
+                      child: Text(
+                        "Duration",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Nunito',
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(30, 0, 0, 0),
+                      child: Text(
+                        "$duration:00 hours",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontFamily: 'Nunito',
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(30, 5, 0, 0),
+                      child: Text(
+                        "Slot",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Nunito',
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(30, 0, 0, 0),
+                      child: Text(
+                        slot,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontFamily: 'Nunito',
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(30, 5, 0, 0),
+                      child: Text(
+                        "User",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 19,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Nunito',
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(40, 5, 0, 0),
+                      child: Text(
+                        "Full Name",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Nunito',
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(40, 0, 0, 0),
+                      child: Text(
+                        "$fullName",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontFamily: 'Nunito',
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(40, 0, 0, 0),
+                      child: Text(
+                        "Phone Number",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Nunito',
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(40, 0, 0, 0),
+                      child: Text(
+                        "$phone",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontFamily: 'Nunito',
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Center(
+                      child: SizedBox(
+                        width: 200,
+                        child: Divider(
+                          color: Col.primary,
+                          thickness: 2,
+                        ),
+                      ),
+                    ),
+                    completed
+                        ? SizedBox()
+                        : (parked)
+                            ? Center(
+                                child: Container(
+                                  width: 220,
+                                  child: RaisedButton(
+                                    onPressed: () async {
+                                      setState(() {
+                                        isParked = true;
+                                        isCompleted = true;
+                                      });
+                                      await editParked(reservationId);
+                                      Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  HomePage()));
+                                    },
+                                    color: Col.primary,
+                                    child: Text(
+                                      'Left',
+                                      style: TextStyle(
+                                        color: Col.blackColor,
+                                        fontSize: 16,
+                                        fontFamily: 'Nunito',
+                                        letterSpacing: 0.3,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(20)),
+                                  ),
+                                ),
+                              )
+                            : Center(
+                                child: Container(
+                                  width: 220,
+                                  child: RaisedButton(
+                                    onPressed: () async {
+                                      setState(() {
+                                        isParked = true;
+                                        parked = true;
+                                      });
+                                      await editParked(reservationId);
+                                    },
+                                    color: Col.primary,
+                                    child: Text(
+                                      'Parked',
+                                      style: TextStyle(
+                                        color: Col.blackColor,
+                                        fontSize: 16,
+                                        fontFamily: 'Nunito',
+                                        letterSpacing: 0.3,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(20)),
+                                  ),
+                                ),
+                              ),
+                  ],
                 ),
               ),
-                  ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

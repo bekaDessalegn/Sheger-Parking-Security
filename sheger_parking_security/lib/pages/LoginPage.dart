@@ -13,30 +13,22 @@ import 'package:sheger_parking_security/pages/HomePage.dart';
 import 'package:http/http.dart' as http;
 
 class LoginPage extends StatefulWidget {
-
   @override
   _LoginPageState createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
-
   final _formKey = GlobalKey<FormState>();
   bool _secureText = true;
 
   String? response;
   String? hashedPassword;
 
-  Future login() async{
-    var headersList = {
-      'Accept': '*/*',
-      'Content-Type': 'application/json'
-    };
+  Future login() async {
+    var headersList = {'Accept': '*/*', 'Content-Type': 'application/json'};
     var url = Uri.parse('${base_url}/token:qwhu67fv56frt5drfx45e/staffs/login');
 
-    var body = {
-      "phone": staff.phone,
-      "passwordHash": hashedPassword
-    };
+    var body = {"phone": staff.phone, "passwordHash": hashedPassword};
     var req = http.Request('POST', url);
     req.headers.addAll(headersList);
     req.body = json.encode(body);
@@ -49,13 +41,12 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     if (res.statusCode >= 200 && res.statusCode < 300) {
-      print(resBody);
-
       var data = json.decode(resBody);
       String email = data["email"].toString();
       String branchId = data["branch"].toString();
 
-      var url = Uri.parse('${base_url}/token:qwhu67fv56frt5drfx45e/branches/${branchId}');
+      var url = Uri.parse(
+          '${base_url}/token:qwhu67fv56frt5drfx45e/branches/${branchId}');
       var req = http.Request('GET', url);
       req.headers.addAll(headersList);
 
@@ -66,7 +57,8 @@ class _LoginPageState extends State<LoginPage> {
         var dataBranch = json.decode(resBodyBranch);
         branchName = dataBranch["name"].toString();
       }
-      final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+      final SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
       sharedPreferences.setString("email", email);
       sharedPreferences.setString("branchId", branchId);
       sharedPreferences.setString("branchName", branchName);
@@ -74,11 +66,9 @@ class _LoginPageState extends State<LoginPage> {
       Strings.branchId = branchId;
       Strings.branchName = branchName;
 
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
-    }
-    else {
-      print(res.reasonPhrase);
-    }
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => HomePage()));
+    } else {}
   }
 
   Staff staff = Staff('', '', '', '', '');
@@ -88,120 +78,78 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: Col.background,
-      body:SingleChildScrollView(
+      body: SingleChildScrollView(
         child: Container(
           color: Col.background,
-          child:
-        Form(
-        key: _formKey,
-        child:Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Padding(
-                padding: EdgeInsets.fromLTRB(15, 40, 0, 0),
-                child: Text(Strings.app_title,
-                  style: TextStyle(
-                    color: Col.primary,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Nunito',
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(15, 0, 0, 0),
-                child: Text("PARKING",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Nunito',
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-              Padding(padding: EdgeInsets.fromLTRB(15, 40, 0, 0),
-                child: Text(Strings.login,
-                  style: TextStyle(
-                    color: Col.Onbackground,
-                    fontSize: 60,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Nunito',
-                    letterSpacing: 0.1,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(25, 60, 25, 0),
-                child: Container(
-                  alignment: Alignment.center,
-                  child: TextFormField(
-                    controller: TextEditingController(text: staff.phone),
-                    onChanged: (value){
-                      staff.phone = value;
-                    },
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return "This field can not be empty";
-                      }
-                      else {
-                        return null;
-                      }
-                    },
-                    decoration: InputDecoration(
-                      hintText: "",
-                      hintStyle: TextStyle(
-                        color: Col.textfieldLabel,
-                        fontSize: 14,
-                        fontFamily: 'Nunito',
-                        letterSpacing: 0.1,
-                      ),
-                      labelText: "Phone Number",
-                      labelStyle: TextStyle(
-                        color: Col.textfieldLabel,
-                        fontSize: 14,
-                        fontFamily: 'Nunito',
-                        letterSpacing: 0,
-                      ),
-                      border: OutlineInputBorder(),
-                      errorBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.red),
-                      ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.fromLTRB(15, 40, 0, 0),
+                  child: Text(
+                    Strings.app_title,
+                    style: TextStyle(
+                      color: Col.primary,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Nunito',
+                      letterSpacing: 0.3,
                     ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(25, 20, 25, 0),
-                child: Container(
-                  alignment: Alignment.center,
-                  child: TextFormField(
-                    controller: TextEditingController(text: staff.passwordHash),
-                    onChanged: (value){
-                      var bytes = utf8.encode(value);
-                      var sha512 = sha256.convert(bytes);
-                      var hashedPassword = sha512.toString();
-                      this.hashedPassword = hashedPassword;
-                      staff.passwordHash = value;
-                    },
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return "This field can not be empty";
-                      }
-                      else {
-                        return null;
-                      }
-                    },
-                    decoration: InputDecoration(
-                        hintText: "Password",
+                Padding(
+                  padding: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                  child: Text(
+                    "PARKING",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Nunito',
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(15, 40, 0, 0),
+                  child: Text(
+                    Strings.login,
+                    style: TextStyle(
+                      color: Col.Onbackground,
+                      fontSize: 60,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Nunito',
+                      letterSpacing: 0.1,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(25, 60, 25, 0),
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: TextFormField(
+                      controller: TextEditingController(text: staff.phone),
+                      onChanged: (value) {
+                        staff.phone = value;
+                      },
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return "This field can not be empty";
+                        } else {
+                          return null;
+                        }
+                      },
+                      decoration: InputDecoration(
+                        hintText: "",
                         hintStyle: TextStyle(
                           color: Col.textfieldLabel,
                           fontSize: 14,
                           fontFamily: 'Nunito',
                           letterSpacing: 0.1,
                         ),
-                        labelText: "Password",
+                        labelText: "Phone Number",
                         labelStyle: TextStyle(
                           color: Col.textfieldLabel,
                           fontSize: 14,
@@ -209,63 +157,107 @@ class _LoginPageState extends State<LoginPage> {
                           letterSpacing: 0,
                         ),
                         border: OutlineInputBorder(),
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _secureText = !_secureText;
-                            });
-                          },
-                          icon: Icon(
-                            _secureText == true
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: Col.Onbackground,
-                          ),
-                        )),
-                    obscureText: _secureText,
-                  ),
-                ),
-              ),
-              (response == "Not Found") ?
-              Padding(
-                padding: const EdgeInsets.only(top: 15, left: 25),
-                child: Text("One of the credentials is incorrect",
-                  style: TextStyle(
-                      color: Colors.redAccent,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15
-                  ),
-                ),
-              ) : Text(""),
-              Padding(
-                padding: EdgeInsets.fromLTRB(25, 65, 25, 0),
-                child: Container(
-                  width: double.infinity,
-                  child: RaisedButton(
-                      color: Col.primary,
-                      child: Text(
-                        "Login",
-                        style: TextStyle(
-                          color: Col.Onprimary,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Nunito',
-                          letterSpacing: 0.3,
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.red),
                         ),
                       ),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          login();
-                        }
-                      }
+                    ),
                   ),
                 ),
-              ),
-            ],
+                Padding(
+                  padding: EdgeInsets.fromLTRB(25, 20, 25, 0),
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: TextFormField(
+                      controller:
+                          TextEditingController(text: staff.passwordHash),
+                      onChanged: (value) {
+                        var bytes = utf8.encode(value);
+                        var sha512 = sha256.convert(bytes);
+                        var hashedPassword = sha512.toString();
+                        this.hashedPassword = hashedPassword;
+                        staff.passwordHash = value;
+                      },
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return "This field can not be empty";
+                        } else {
+                          return null;
+                        }
+                      },
+                      decoration: InputDecoration(
+                          hintText: "Password",
+                          hintStyle: TextStyle(
+                            color: Col.textfieldLabel,
+                            fontSize: 14,
+                            fontFamily: 'Nunito',
+                            letterSpacing: 0.1,
+                          ),
+                          labelText: "Password",
+                          labelStyle: TextStyle(
+                            color: Col.textfieldLabel,
+                            fontSize: 14,
+                            fontFamily: 'Nunito',
+                            letterSpacing: 0,
+                          ),
+                          border: OutlineInputBorder(),
+                          suffixIcon: IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _secureText = !_secureText;
+                              });
+                            },
+                            icon: Icon(
+                              _secureText == true
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: Col.Onbackground,
+                            ),
+                          )),
+                      obscureText: _secureText,
+                    ),
+                  ),
+                ),
+                (response == "Not Found")
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 15, left: 25),
+                        child: Text(
+                          "One of the credentials is incorrect",
+                          style: TextStyle(
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15),
+                        ),
+                      )
+                    : Text(""),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(25, 65, 25, 0),
+                  child: Container(
+                    width: double.infinity,
+                    child: RaisedButton(
+                        color: Col.primary,
+                        child: Text(
+                          "Login",
+                          style: TextStyle(
+                            color: Col.Onprimary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Nunito',
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            login();
+                          }
+                        }),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
         ),
       ),
     );
