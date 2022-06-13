@@ -325,6 +325,7 @@ class ExpectedPageState extends State<ExpectedPage> {
                                                         parked:
                                                             reservationDetail
                                                                 .parked,
+                                                        completed: reservationDetail.completed,
                                                       )));
                                         },
                                         child: Card(
@@ -631,9 +632,11 @@ class ExpectedPageState extends State<ExpectedPage> {
                                   Text(
                                     "No Reservations!",
                                     style: TextStyle(
-                                        color: Col.whiteColor,
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold),
+                                      color: Col.whiteColor,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.center,
                                   ),
                                   SizedBox(
                                     height: 10,
@@ -641,7 +644,10 @@ class ExpectedPageState extends State<ExpectedPage> {
                                   Text(
                                     "Reservations at you branch will appear here.",
                                     style: TextStyle(
-                                        color: Col.whiteColor, fontSize: 18),
+                                      color: Col.whiteColor,
+                                      fontSize: 18,
+                                    ),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ],
                               ),
@@ -692,6 +698,7 @@ class ExpectedPageState extends State<ExpectedPage> {
                         startingTime: reservationDetail.startingTime.toString(),
                         duration: reservationDetail.duration.toString(),
                         parked: reservationDetail.parked,
+                    completed: reservationDetail.completed
                       )));
         },
         child: Padding(

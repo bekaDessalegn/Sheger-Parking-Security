@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sheger_parking_security/constants/colors.dart';
 import 'package:sheger_parking_security/constants/strings.dart';
+import 'package:sheger_parking_security/pages/HistoryPage.dart';
 import 'package:sheger_parking_security/pages/LoginPage.dart';
 import 'package:sheger_parking_security/pages/ParkedPage.dart';
 
@@ -23,6 +24,7 @@ class _HomePageState extends State<HomePage> {
     ExpectedPage(),
     ParkedPage(),
     ExpiredPage(),
+    HistoryPage()
   ];
 
   @override
@@ -142,6 +144,7 @@ class _HomePageState extends State<HomePage> {
       body:
       screens[currentIndex],
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         selectedItemColor: Col.primary,
         iconSize: 28,
         currentIndex: currentIndex,
@@ -159,6 +162,10 @@ class _HomePageState extends State<HomePage> {
           icon: Icon(Icons.assignment_late),
           label: "Expired",
         ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: "History",
+          ),
       ],
       ),
     );

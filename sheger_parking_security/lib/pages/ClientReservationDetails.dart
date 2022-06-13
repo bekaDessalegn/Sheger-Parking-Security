@@ -21,7 +21,7 @@ class ClientReservationDetails extends StatefulWidget {
       price,
       startingTime,
       duration;
-  bool parked;
+  bool parked, completed;
 
   ClientReservationDetails(
       {required this.reservationId,
@@ -33,12 +33,14 @@ class ClientReservationDetails extends StatefulWidget {
       required this.price,
       required this.startingTime,
       required this.duration,
-      required this.parked});
+      required this.parked,
+      required this.completed
+      });
 
   @override
   _ClientReservationDetailsState createState() =>
       _ClientReservationDetailsState(reservationId, client,
-          reservationPlateNumber, branch, branchName, slot, price, startingTime, duration, parked);
+          reservationPlateNumber, branch, branchName, slot, price, startingTime, duration, parked, completed);
 }
 
 class _ClientReservationDetailsState extends State<ClientReservationDetails> {
@@ -52,6 +54,7 @@ class _ClientReservationDetailsState extends State<ClientReservationDetails> {
       startingTime,
       duration;
   bool parked = false;
+  bool completed;
 
   _ClientReservationDetailsState(
       this.reservationId,
@@ -63,7 +66,9 @@ class _ClientReservationDetailsState extends State<ClientReservationDetails> {
       this.price,
       this.startingTime,
       this.duration,
-      this.parked);
+      this.parked,
+      this.completed
+      );
 
   late String startTime;
   late String startDate;
@@ -447,7 +452,7 @@ class _ClientReservationDetailsState extends State<ClientReservationDetails> {
                   ),
                 ),
               ),
-              (parked)
+              completed ? SizedBox() : (parked)
                   ? Center(
                     child: Container(
                 width:

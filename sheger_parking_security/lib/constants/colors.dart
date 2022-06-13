@@ -15,6 +15,6 @@ class Col{
  static Color deleteColor = Color(0xFFAB0000);
  static Color gradientColor = Color(0xFF978B4D).withOpacity(0.6);
  static Color locationgradientColor = Color(0xFF567556);
- static Color expiredColor = Color(0xFFAB0000);
+ static Color expiredColor = Color(0xFFAB0000).withRed(255);
  static Color? expired = Colors.redAccent[100];
 }
