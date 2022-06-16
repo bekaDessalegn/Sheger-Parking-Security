@@ -175,7 +175,7 @@ class _ParkedPageState extends State<ParkedPage> {
       String formattedStartTime = DateFormat('h:mm a').format(startingTime);
 
       DateTime finishTime =
-          startingTime.add(Duration(hours: reservations[0].duration));
+          startingTime.add(Duration(minutes: (reservations[0].duration*60).round()));
       String endTime = DateFormat('h:mm a').format(finishTime);
 
       this.startingTime = formattedStartTime;

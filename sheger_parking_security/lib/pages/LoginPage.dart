@@ -23,52 +23,62 @@ class _LoginPageState extends State<LoginPage> {
 
   String? response;
   String? hashedPassword;
+  bool socketError = false;
 
   Future login() async {
     var headersList = {'Accept': '*/*', 'Content-Type': 'application/json'};
     var url = Uri.parse('${base_url}/token:qwhu67fv56frt5drfx45e/staffs/login');
 
     var body = {"phone": staff.phone, "passwordHash": hashedPassword};
-    var req = http.Request('POST', url);
-    req.headers.addAll(headersList);
-    req.body = json.encode(body);
 
-    var res = await req.send();
-    final resBody = await res.stream.bytesToString();
-
-    setState(() {
-      response = res.reasonPhrase;
-    });
-
-    if (res.statusCode >= 200 && res.statusCode < 300) {
-      var data = json.decode(resBody);
-      String email = data["email"].toString();
-      String branchId = data["branch"].toString();
-
-      var url = Uri.parse(
-          '${base_url}/token:qwhu67fv56frt5drfx45e/branches/${branchId}');
-      var req = http.Request('GET', url);
+    try{
+      var req = http.Request('POST', url);
       req.headers.addAll(headersList);
+      req.body = json.encode(body);
 
-      var resBranch = await req.send();
-      final resBodyBranch = await resBranch.stream.bytesToString();
-      String branchName = "";
-      if (resBranch.statusCode >= 200 && resBranch.statusCode < 300) {
-        var dataBranch = json.decode(resBodyBranch);
-        branchName = dataBranch["name"].toString();
-      }
-      final SharedPreferences sharedPreferences =
-          await SharedPreferences.getInstance();
-      sharedPreferences.setString("email", email);
-      sharedPreferences.setString("branchId", branchId);
-      sharedPreferences.setString("branchName", branchName);
+      var res = await req.send();
+      final resBody = await res.stream.bytesToString();
 
-      Strings.branchId = branchId;
-      Strings.branchName = branchName;
+      setState(() {
+        response = res.reasonPhrase;
+        socketError = false;
+      });
 
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => HomePage()));
-    } else {}
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        var data = json.decode(resBody);
+        String email = data["email"].toString();
+        String branchId = data["branch"].toString();
+
+        var url = Uri.parse(
+            '${base_url}/token:qwhu67fv56frt5drfx45e/branches/${branchId}');
+        var req = http.Request('GET', url);
+        req.headers.addAll(headersList);
+
+        var resBranch = await req.send();
+        final resBodyBranch = await resBranch.stream.bytesToString();
+        String branchName = "";
+        if (resBranch.statusCode >= 200 && resBranch.statusCode < 300) {
+          var dataBranch = json.decode(resBodyBranch);
+          branchName = dataBranch["name"].toString();
+        }
+        final SharedPreferences sharedPreferences =
+        await SharedPreferences.getInstance();
+        sharedPreferences.setString("email", email);
+        sharedPreferences.setString("branchId", branchId);
+        sharedPreferences.setString("branchName", branchName);
+
+        Strings.branchId = branchId;
+        Strings.branchName = branchName;
+
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => HomePage()));
+      } else {}
+    }
+    catch (e) {
+      setState(() {
+        socketError = true;
+      });
+    }
   }
 
   Staff staff = Staff('', '', '', '', '');
@@ -230,6 +240,20 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       )
                     : Text(""),
+                (socketError)
+                    ? Padding(
+                  padding: const EdgeInsets.only(top: 5),
+                  child: Center(
+                    child: Text(
+                      "There is an internet connection problem",
+                      style: TextStyle(
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15),
+                    ),
+                  ),
+                )
+                    : SizedBox(),
                 Padding(
                   padding: EdgeInsets.fromLTRB(25, 65, 25, 0),
                   child: Container(
